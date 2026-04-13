@@ -1,0 +1,52 @@
+{
+  "brief": "finace advisor for someone new to stock market in early,late 20s",
+  "research": {
+    "product_name": "FirstTrade Advisor",
+    "one_liner": "An AI-powered financial advisor that teaches young adults how to invest in stocks through personalized, jargon-free guidance and hands-on portfolio coaching.",
+    "target_users": [
+      {
+        "segment": "Early-20s college students or recent grads",
+        "pain": "No investing knowledge, intimidated by complexity, small amounts of disposable income, fear of losing money",
+        "current_solution": "YouTube videos, Reddit r/personalfinance, or simply not investing at all"
+      },
+      {
+        "segment": "Late-20s young professionals with growing income",
+        "pain": "Have money to invest but no structured guidance, overwhelmed by too many options, unsure how to balance investing with debt repayment",
+        "current_solution": "Robinhood or Acorns with no real strategy, or a traditional financial advisor they can't afford"
+      }
+    ],
+    "competitors": [
+      {
+        "name": "Robinhood",
+        "what_they_do": "Commission-free stock trading app with a clean UI",
+        "their_gap": "Zero financial education or personalized advice \u2014 users trade blind and often make emotional decisions"
+      },
+      {
+        "name": "Acorns",
+        "what_they_do": "Micro-investing by rounding up purchases into diversified portfolios",
+        "their_gap": "Too passive and opaque \u2014 users learn nothing about investing and have no control or understanding of where money goes"
+      },
+      {
+        "name": "Betterment",
+        "what_they_do": "Robo-advisor that builds and manages diversified portfolios automatically",
+        "their_gap": "Skews toward older, wealth-accumulation mindset \u2014 does not educate or engage young users who want to learn, not just automate"
+      },
+      {
+        "name": "Public.com",
+        "what_they_do": "Social investing platform with community commentary on stocks",
+        "their_gap": "Social layer creates herd mentality risk \u2014 peer pressure over sound financial reasoning, still lacks true personalized advice"
+      }
+    ],
+    "market_gaps": [
+      "No major player combines real personalized advice with active financial education in a single product for beginners",
+      "Existing apps treat young investors as traders, not learners \u2014 nobody is building investing literacy as a core feature",
+      "There is no affordable middle ground between a $0 DIY app and a $200/hr human financial advisor for 20-somethings"
+    ],
+    "differentiation": "FirstTrade Advisor acts as a coach, not just a broker \u2014 it explains the 'why' behind every recommendation, adapts to the user's income, goals, and risk comfort in plain language, and progressively builds their investing confidence rather than creating dependency on automation.",
+    "risks": [
+      "Regulatory risk: providing personalized financial advice requires RIA licensing or partnership with a registered advisor, which adds cost and compliance complexity",
+      "Monetization tension: the users most in need of guidance have the least assets under management, making traditional AUM-based revenue models weak at early stages"
+    ],
+    "learning_note": "In this market, trust and simplicity beat features \u2014 young first-time investors are not churning because of missing tools, they are disengaging because they feel stupid or scared. A PM must resist the urge to add complexity and instead obsess over the moment a new user feels confident enough to make their first real investment decision."
+  }
+}
