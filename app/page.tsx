@@ -36,7 +36,7 @@ type Stage = 'home' | 'loading' | 'results';
 const EXAMPLES = [
   'Finance advisor for someone new to the stock market in their 20s',
   'A Slack bot that triages customer support tickets automatically',
-  "Credit coaching tool for young adults who don't understand credit scores",
+  'Credit coaching tool for young adults who don't understand credit scores',
 ];
 
 // ── Loading steps ─────────────────────────────────────────────────
@@ -85,6 +85,9 @@ export default function Home() {
       setDiagram(data.diagram);
       setStage('results');
       setActiveTab('research');
+      // Store for export page
+      sessionStorage.setItem('pm_sidekick_research', JSON.stringify(data.research));
+      sessionStorage.setItem('pm_sidekick_brief', brief);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
       setStage('home');
@@ -333,10 +336,14 @@ export default function Home() {
               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Competitors</h3>
               <div className="space-y-3">
                 {research.competitors?.map((c, i) => (
-                  <div key={i} className="pb-3 border-b border-slate-100 last:border-0 last:pb-0">
-                    <p className="font-semibold text-sm text-slate-800 mb-0.5">{c.name}</p>
-                    <p className="text-xs text-slate-500 mb-1">{c.what_they_do}</p>
-                    <p className="text-xs text-teal-600 font-medium">↳ {c.their_gap}</p>
+                  <div key={i} className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-semibold text-sm text-slate-800">{c.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{c.what_they_do}</p>
+                    </div>
+                    <span className="shrink-0 text-xs bg-teal-50 text-teal-700 border border-teal-100 px-2 py-0.5 rounded-full">
+                      {c.their_gap}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -427,16 +434,18 @@ export default function Home() {
         <div className="mt-8 pt-6 border-t border-slate-200 animate-fade-up animate-delay-300">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <p className="text-sm font-medium text-slate-700 mb-1">Export your artifacts</p>
-              <p className="text-xs text-slate-400">JIRA epics, stories, and CSV export coming in Week 2</p>
+              <p className="text-sm font-medium text-slate-700 mb-1">Ready to export?</p>
+              <p className="text-xs text-slate-400">Generate JIRA epics and user stories from your research</p>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              {['JIRA epics', 'User stories', 'CSV', 'Notion'].map(fmt => (
-                <button key={fmt} disabled
-                  className="text-xs text-slate-400 border border-slate-200 px-3 py-1.5 rounded-lg cursor-not-allowed opacity-50">
-                  {fmt}
-                </button>
-              ))}
+            <div className="flex gap-3 flex-wrap">
+              <a href="/export"
+                className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-xl transition-all">
+                Generate JIRA artifacts →
+              </a>
+              <button disabled
+                className="text-xs text-slate-400 border border-slate-200 px-4 py-2.5 rounded-xl cursor-not-allowed opacity-50">
+                Notion export (Week 3)
+              </button>
             </div>
           </div>
         </div>

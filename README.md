@@ -84,7 +84,7 @@ The discovery process happened before a line of code was written — personas, b
 - [x] Wireframes — 5 screens, flow diagram, journey map
 - [x] Python CLI prototype (working, tested)
 - [x] Next.js web app with research + flow diagram
-- [ ] JIRA artifact export screen
+- [x] JIRA artifact export screen
 - [ ] Epic & story writer with format flexibility (Notion, CSV)
 - [ ] Polish, custom domain, shareable session links
 
