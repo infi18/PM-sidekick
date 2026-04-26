@@ -224,7 +224,7 @@ python3 pm_sidekick.py
 
 ## About
 
-Senior PM with a background in software development, 3.5+ years in consumer financial products (credit scores, monitoring, identity risk). Currently completing a Behavioral Design for Finance certification (Irrational Labs).
+Senior PM with a background in software development, consumer financial products. Currently completing a Behavioral Design for Finance certification (Irrational Labs).
 
 Building tools at the intersection of product thinking and AI-native development.
 
