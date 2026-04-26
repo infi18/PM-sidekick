@@ -4,6 +4,8 @@
 
 > **Built by a PM who got tired of context-switching between 5 tools to do one job.**
 
+Link - https://pm-sidekick-ten.vercel.app/
+
 [![Python](https://img.shields.io/badge/Python-3.9+-blue)](https://python.org)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org)
 [![Claude API](https://img.shields.io/badge/Claude-claude--sonnet--4--6-green)](https://anthropic.com)
