@@ -3,75 +3,53 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const EXPORT_SYSTEM = `You are a senior product manager who writes excellent JIRA tickets.
-Your job is to take a product research summary and generate well-structured JIRA epics and user stories.
-Return ONLY valid JSON — no markdown fences, no preamble, no explanation.
-Stories should be plain English first — not just "As a user I want" templates.
-Each story should explain the WHY not just the WHAT.`;
-
 export async function POST(req: NextRequest) {
+  const { research, brief } = await req.json();
+
+  if (!research || !brief) {
+    return NextResponse.json({ error: 'Missing research or brief' }, { status: 400 });
+  }
+
   try {
-    const { research, brief } = await req.json();
-
-    if (!research || !brief) {
-      return NextResponse.json({ error: 'Missing research or brief' }, { status: 400 });
-    }
-
+    // Collect full response — Haiku is fast enough (~5-8s) without streaming
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 3000,
-      system: EXPORT_SYSTEM,
-      messages: [{
-        role: 'user',
-        content: `Generate JIRA epics and user stories for this product.
-
-Product brief: ${brief}
-
-Product name: ${research.product_name}
-One liner: ${research.one_liner}
-Target users: ${JSON.stringify(research.target_users)}
-Market gaps: ${JSON.stringify(research.market_gaps)}
-Differentiation: ${research.differentiation}
-
-Return a JSON object with this exact structure:
-{
-  "epics": [
-    {
-      "id": "EPIC-1",
-      "title": "string — short epic title",
-      "description": "string — what this epic covers and why it matters",
-      "goal": "string — the outcome we're trying to achieve",
-      "stories": [
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1800,
+      system: 'You are a product manager. Return ONLY raw JSON starting with { and ending with }. No markdown. No backticks. No explanation.',
+      messages: [
+        // Prime the assistant to start with { by prefilling
         {
-          "id": "STORY-1-1",
-          "title": "string — short story title",
-          "description": "string — plain English description of what needs to be built and why",
-          "acceptance_criteria": ["string", "string", "string"],
-          "story_points": 3,
-          "priority": "High | Medium | Low",
-          "labels": ["string"]
-        }
-      ]
-    }
-  ]
-}
+          role: 'user',
+          content: `Generate JIRA epics and stories for: ${research.product_name} — ${research.one_liner}
 
-Generate 3-4 epics with 2-4 stories each.
-Epics should cover: Core user flow, Onboarding, Research/Discovery, and Export/Output.
-Make acceptance criteria specific and testable.
-Story points should be 1, 2, 3, 5, or 8 (Fibonacci).`
-      }],
+Brief: ${brief}
+Target users: ${research.target_users?.map((u: {segment: string}) => u.segment).join(', ')}
+Market gaps: ${research.market_gaps?.slice(0, 3).join(', ')}
+
+Return JSON with 3 epics, 2 stories each:
+{"epics":[{"id":"EPIC-1","title":"...","description":"...","goal":"...","stories":[{"id":"STORY-1-1","title":"...","description":"...","acceptance_criteria":["...","...","..."],"story_points":3,"priority":"High","labels":["..."]}]}]}
+
+story_points: 1,2,3,5,8 only. priority: "High","Medium","Low" only.`
+        },
+        // Prefill assistant response to force it to start with {
+        {
+          role: 'assistant',
+          content: '{'
+        }
+      ],
     });
 
     const raw = response.content[0].type === 'text' ? response.content[0].text : '';
-    const cleaned = raw.replace(/^```(?:json)?\s*/m, '').replace(/\s*```$/m, '').trim();
 
-    try {
-      const artifacts = JSON.parse(cleaned);
-      return NextResponse.json(artifacts);
-    } catch {
-      return NextResponse.json({ error: 'Failed to parse artifacts', raw }, { status: 500 });
-    }
+    // The response continues from our prefilled { so prepend it back
+    const fullJson = '{' + raw;
+
+    // Find the last valid } to close the JSON
+    const lastBrace = fullJson.lastIndexOf('}');
+    const jsonStr = fullJson.substring(0, lastBrace + 1);
+
+    const artifacts = JSON.parse(jsonStr);
+    return NextResponse.json(artifacts);
 
   } catch (err: unknown) {
     console.error('Export error:', err);

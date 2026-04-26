@@ -34,9 +34,9 @@ type Mode = 'learner' | 'expert';
 type Stage = 'home' | 'loading' | 'results';
 
 const EXAMPLES = [
-  'Finance advisor for someone new to the stock market in their 20s',
-  'A Slack bot that triages customer support tickets automatically',
-  'Credit coaching tool for young adults who don't understand credit scores',
+  "Finance advisor for someone new to the stock market in their 20s",
+  "A Slack bot that triages customer support tickets automatically",
+  "Credit coaching tool for young adults who don't understand credit scores",
 ];
 
 // ── Loading steps ─────────────────────────────────────────────────
@@ -336,14 +336,10 @@ export default function Home() {
               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Competitors</h3>
               <div className="space-y-3">
                 {research.competitors?.map((c, i) => (
-                  <div key={i} className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-semibold text-sm text-slate-800">{c.name}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{c.what_they_do}</p>
-                    </div>
-                    <span className="shrink-0 text-xs bg-teal-50 text-teal-700 border border-teal-100 px-2 py-0.5 rounded-full">
-                      {c.their_gap}
-                    </span>
+                  <div key={i} className="pb-3 border-b border-slate-100 last:border-0 last:pb-0">
+                    <p className="font-semibold text-sm text-slate-800">{c.name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 mb-1">{c.what_they_do}</p>
+                    <p className="text-xs text-teal-600 font-medium">↳ {c.their_gap}</p>
                   </div>
                 ))}
               </div>

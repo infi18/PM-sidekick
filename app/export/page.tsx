@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Story {
   id: string;
@@ -33,13 +33,15 @@ const PRIORITY_STYLES: Record<string, string> = {
 export default function ExportPage() {
   const [artifacts, setArtifacts] = useState<Artifacts | null>(null);
   const [loading, setLoading]     = useState(true);
+  const [streaming, setStreaming]  = useState(false);
+  const [progress, setProgress]   = useState(0);
   const [error, setError]         = useState('');
   const [copied, setCopied]       = useState<string | null>(null);
   const [expanded, setExpanded]   = useState<Record<string, boolean>>({});
+  const bufferRef = useRef('');
 
   useEffect(() => {
-    // Load research from sessionStorage (set by results page)
-    const raw = sessionStorage.getItem('pm_sidekick_research');
+    const raw   = sessionStorage.getItem('pm_sidekick_research');
     const brief = sessionStorage.getItem('pm_sidekick_brief');
 
     if (!raw || !brief) {
@@ -52,24 +54,53 @@ export default function ExportPage() {
   }, []);
 
   async function generateArtifacts(research: object, brief: string) {
+    setStreaming(true);
+    setProgress(30);
+
     try {
       const res = await fetch('/api/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ research, brief }),
       });
+
+      setProgress(80);
       const data = await res.json();
+
       if (!res.ok) throw new Error(data.error || 'Export failed');
+
+      setProgress(100);
       setArtifacts(data);
-      // Expand first epic by default
+
       if (data.epics?.length > 0) {
-        setExpanded({ [data.epics[0].id]: true });
+        const exp: Record<string, boolean> = {};
+        data.epics.forEach((e: Epic) => { exp[e.id] = true; });
+        setExpanded(exp);
       }
+
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
       setLoading(false);
+      setStreaming(false);
     }
+  }
+
+  function tryParse(text: string) {
+    // Try to parse partial JSON — works once we have at least one complete epic
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return;
+    try {
+      const parsed = JSON.parse(match[0]);
+      if (parsed.epics?.length > 0) {
+        setArtifacts(parsed);
+        if (Object.keys(expanded).length === 0) {
+          const exp: Record<string, boolean> = {};
+          parsed.epics.forEach((e: Epic) => { exp[e.id] = true; });
+          setExpanded(exp);
+        }
+      }
+    } catch { /* incomplete JSON — keep buffering */ }
   }
 
   function copyText(text: string, key: string) {
@@ -94,6 +125,8 @@ export default function ExportPage() {
   }
 
   const totalStories = artifacts?.epics.reduce((acc, e) => acc + e.stories.length, 0) ?? 0;
+  const totalPoints  = artifacts?.epics.reduce((acc, e) =>
+    acc + e.stories.reduce((s, st) => s + st.story_points, 0), 0) ?? 0;
 
   return (
     <main className="min-h-screen bg-slate-50 flex flex-col">
@@ -121,42 +154,34 @@ export default function ExportPage() {
       <div className="max-w-5xl mx-auto w-full px-6 py-8 flex-1">
 
         {/* Header */}
-        <div className="mb-8 animate-fade-up">
+        <div className="mb-6 animate-fade-up">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-xs font-semibold text-indigo-500 uppercase tracking-wider bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
               Week 2 — JIRA Export
             </span>
           </div>
           <h1 className="font-display text-3xl text-slate-900 mb-1">JIRA Artifacts</h1>
-          <p className="text-slate-500">
-            Generated from your research. Copy individual stories or export all as JSON.
-          </p>
+          <p className="text-slate-500">Generated from your research. Copy individual stories or export all as JSON.</p>
         </div>
 
-        {/* Loading */}
-        {loading && (
-          <div className="space-y-4 animate-fade-up">
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
-                  <div className="flex gap-1">
-                    {[0,1,2].map(d => (
-                      <span key={d} className="w-1 h-1 rounded-full bg-white animate-bounce"
-                        style={{ animationDelay: `${d * 150}ms` }} />
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="font-medium text-slate-800">Generating JIRA artifacts</p>
-                  <p className="text-xs text-slate-400">Epics · User stories · Acceptance criteria</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {[0,1,2].map(i => (
-                  <div key={i} className="h-14 bg-slate-100 rounded-xl animate-pulse"
-                    style={{ opacity: 1 - i * 0.2 }} />
-                ))}
-              </div>
+        {/* Streaming progress bar */}
+        {streaming && (
+          <div className="mb-6 animate-fade-up">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-slate-500 flex items-center gap-2">
+                <span className="flex gap-1">
+                  {[0,1,2].map(d => (
+                    <span key={d} className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce"
+                      style={{ animationDelay: `${d * 150}ms` }} />
+                  ))}
+                </span>
+                Generating epics and stories...
+              </span>
+              <span className="text-xs text-slate-400">{progress}%</span>
+            </div>
+            <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-500 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }} />
             </div>
           </div>
         )}
@@ -172,18 +197,16 @@ export default function ExportPage() {
           </div>
         )}
 
-        {/* Stats strip */}
-        {artifacts && !loading && (
+        {/* Stats strip — shows as soon as first epic arrives */}
+        {artifacts && (
           <>
             <div className="grid grid-cols-3 gap-4 mb-6 animate-fade-up">
               {[
-                { label: 'Epics', value: artifacts.epics.length, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                { label: 'User stories', value: totalStories, color: 'text-teal-600', bg: 'bg-teal-50' },
-                { label: 'Total points', value: artifacts.epics.reduce((acc, e) =>
-                    acc + e.stories.reduce((s, st) => s + st.story_points, 0), 0),
-                  color: 'text-slate-700', bg: 'bg-slate-100' },
+                { label: 'Epics',         value: artifacts.epics.length,  color: 'text-indigo-600', bg: 'bg-indigo-50'  },
+                { label: 'User stories',  value: totalStories,             color: 'text-teal-600',   bg: 'bg-teal-50'    },
+                { label: 'Total points',  value: totalPoints,              color: 'text-slate-700',  bg: 'bg-slate-100'  },
               ].map(stat => (
-                <div key={stat.label} className={`${stat.bg} rounded-2xl p-4 text-center border border-slate-200`}>
+                <div key={stat.label} className={`${stat.bg} rounded-2xl p-4 text-center border border-slate-200 transition-all`}>
                   <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
                   <p className="text-xs text-slate-500 mt-0.5">{stat.label}</p>
                 </div>
@@ -191,9 +214,9 @@ export default function ExportPage() {
             </div>
 
             {/* Epics */}
-            <div className="space-y-4 animate-fade-up animate-delay-100">
-              {artifacts.epics.map((epic, ei) => (
-                <div key={epic.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="space-y-4">
+              {artifacts.epics.map((epic) => (
+                <div key={epic.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-fade-up">
                   {/* Epic header */}
                   <button onClick={() => toggleEpic(epic.id)}
                     className="w-full text-left px-6 py-5 flex items-start justify-between gap-4 hover:bg-slate-50 transition-colors">
@@ -208,51 +231,42 @@ export default function ExportPage() {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <span className="text-xs text-slate-400">{epic.stories.length} stories</span>
-                      <span className={`text-slate-400 transition-transform ${expanded[epic.id] ? 'rotate-180' : ''}`}>
-                        ▾
-                      </span>
+                      <span className={`text-slate-400 transition-transform ${expanded[epic.id] ? 'rotate-180' : ''}`}>▾</span>
                     </div>
                   </button>
 
-                  {/* Epic goal */}
                   {expanded[epic.id] && (
-                    <div className="px-6 pb-3 border-t border-slate-100">
+                    <div className="px-6 pb-4 border-t border-slate-100">
                       <div className="bg-indigo-50 rounded-xl px-4 py-3 mt-3 mb-4">
                         <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wider mb-1">Epic goal</p>
                         <p className="text-sm text-slate-700">{epic.goal}</p>
                       </div>
 
-                      {/* Stories */}
                       <div className="space-y-3">
                         {epic.stories.map((story) => (
                           <div key={story.id} className="border border-slate-200 rounded-xl overflow-hidden">
-                            {/* Story header */}
                             <div className="flex items-start justify-between gap-3 px-4 py-3 bg-slate-50">
                               <div className="flex items-start gap-2">
                                 <span className="shrink-0 text-xs text-slate-400 font-mono mt-0.5">{story.id}</span>
                                 <p className="font-medium text-sm text-slate-800">{story.title}</p>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                <span className={`text-xs border px-2 py-0.5 rounded-full font-medium ${PRIORITY_STYLES[story.priority]}`}>
+                                <span className={`text-xs border px-2 py-0.5 rounded-full font-medium ${PRIORITY_STYLES[story.priority] ?? PRIORITY_STYLES.Medium}`}>
                                   {story.priority}
                                 </span>
                                 <span className="text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-medium">
                                   {story.story_points}pt
                                 </span>
                                 <button onClick={() => copyStory(story)}
-                                  className="text-xs text-indigo-500 hover:text-indigo-700 border border-indigo-200 hover:border-indigo-300 px-2 py-0.5 rounded-lg transition-all">
+                                  className="text-xs text-indigo-500 hover:text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-lg transition-all">
                                   {copied === story.id ? '✓' : 'Copy'}
                                 </button>
                               </div>
                             </div>
 
-                            {/* Story body */}
                             <div className="px-4 py-3">
                               <p className="text-sm text-slate-600 mb-3">{story.description}</p>
-
-                              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                                Acceptance criteria
-                              </p>
+                              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Acceptance criteria</p>
                               <ul className="space-y-1.5">
                                 {story.acceptance_criteria.map((ac, i) => (
                                   <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
@@ -263,8 +277,6 @@ export default function ExportPage() {
                                   </li>
                                 ))}
                               </ul>
-
-                              {/* Labels */}
                               {story.labels?.length > 0 && (
                                 <div className="flex gap-1.5 mt-3 flex-wrap">
                                   {story.labels.map((label, i) => (
@@ -284,8 +296,8 @@ export default function ExportPage() {
               ))}
             </div>
 
-            {/* Footer export strip */}
-            <div className="mt-8 pt-6 border-t border-slate-200 animate-fade-up animate-delay-200">
+            {/* Export strip */}
+            <div className="mt-8 pt-6 border-t border-slate-200">
               <p className="text-sm font-medium text-slate-700 mb-1">Export options</p>
               <p className="text-xs text-slate-400 mb-4">CSV and Notion export coming in Week 3</p>
               <div className="flex gap-3 flex-wrap">
@@ -293,12 +305,10 @@ export default function ExportPage() {
                   className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium">
                   {copied === 'all' ? '✓ Copied!' : 'Copy all as JSON'}
                 </button>
-                <button disabled
-                  className="text-sm text-slate-400 border border-slate-200 px-5 py-2.5 rounded-xl cursor-not-allowed opacity-50">
+                <button disabled className="text-sm text-slate-400 border border-slate-200 px-5 py-2.5 rounded-xl cursor-not-allowed opacity-50">
                   Download CSV
                 </button>
-                <button disabled
-                  className="text-sm text-slate-400 border border-slate-200 px-5 py-2.5 rounded-xl cursor-not-allowed opacity-50">
+                <button disabled className="text-sm text-slate-400 border border-slate-200 px-5 py-2.5 rounded-xl cursor-not-allowed opacity-50">
                   Export to Notion
                 </button>
               </div>
@@ -309,8 +319,7 @@ export default function ExportPage() {
 
       <footer className="border-t border-slate-200 py-4 text-center text-xs text-slate-400">
         © 2026 Siddhi Naik · PM Sidekick · CC BY-NC 4.0 ·{' '}
-        <a href="https://github.com/infi18/PM-sidekick" className="hover:text-slate-600 underline"
-          target="_blank" rel="noreferrer">
+        <a href="https://github.com/infi18/PM-sidekick" className="hover:text-slate-600 underline" target="_blank" rel="noreferrer">
           github.com/infi18/PM-sidekick
         </a>
       </footer>
