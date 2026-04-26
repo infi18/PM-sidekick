@@ -1,234 +1,127 @@
-# 🤖 PM Sidekick
+# PM Sidekick 🤖
 
-### The AI copilot for every kind of PM — from learning the craft to skipping the grunt work.
+**Try it:** [pm-sidekick-ten.vercel.app](https://pm-sidekick-ten.vercel.app)
 
-> **Built by a PM who got tired of context-switching between 5 tools to do one job.**
-
-Link - https://pm-sidekick-ten.vercel.app/
-
-[![Python](https://img.shields.io/badge/Python-3.9+-blue)](https://python.org)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-pm--sidekick--ten.vercel.app-6366F1)](https://pm-sidekick-ten.vercel.app)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org)
 [![Claude API](https://img.shields.io/badge/Claude-claude--sonnet--4--6-green)](https://anthropic.com)
-[![Status](https://img.shields.io/badge/Status-In%20Development-orange)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey)](LICENSE)
 
-> © 2026 Siddhi Naik · All visual artifacts, personas, and discovery work are original.
-> Licensed under [CC BY-NC 4.0](LICENSE) — share with attribution, not for commercial use.
+> © 2026 Siddhi Naik · Licensed under [CC BY-NC 4.0](LICENSE) — please don't repackage this commercially.
 
 ---
 
-## The Problem
+## What is this
 
-Product managers spend 60–70% of their time on work that doesn't require their expertise.
+I built PM Sidekick because I kept running into the same problem at work: every AI tool for PMs assumes you already know exactly what you're doing. You still have to know which template to open, what a story point means, how to structure an epic. The AI just fills in the blanks faster.
 
-Writing stories. Reformatting research. Translating Slack conversations into JIRA tickets. Creating flow diagrams from scratch. Explaining what a PRD is — again.
+That's not actually useful for a PM who's still learning. And it's not that useful for a senior PM who just wants to describe what they're building in plain English and get something their team can act on.
 
-**Every existing AI PM tool makes this worse, not better:**
-- They assume you already know agile methodology
-- They're point solutions — research here, diagrams there, stories somewhere else
-- They add process overhead without removing actual work
-- They're built for experienced PMs — useless if you're still learning
+So I built a tool that starts with a blank text box and one question: **what are you building?**
 
-**PM Sidekick does the full chain, in plain English, for any PM.**
+You describe it like you'd explain it to a colleague. PM Sidekick handles the research, the diagram, and the artifacts.
 
 ---
 
-## How It's Different from Claude Code PM Plugins
+## What it does right now
 
-The Claude Code PM plugin ecosystem — including Anthropic's official Product Management plugin and community plugins like `pm-skills` — is genuinely powerful. 47+ skills, slash commands like `/write-spec` and `/competitive-brief`, battle-tested PM frameworks baked in.
+Type a plain-English description of what you're building. You get back:
 
-But there's a real barrier: **you need Claude Code installed, authenticated, and a terminal open to use any of it.** That eliminates the majority of PMs — especially anyone early in their career who's never touched a terminal.
+1. **Market research** — who's in the space, what their gaps are, who your users are, what makes your idea different. Plus a PM learning note that explains what this market data actually means (you can turn this off if you don't need it).
 
-| | Claude Code PM Plugins | PM Sidekick |
-|---|---|---|
-| **Setup required** | Terminal install + auth + workspace config | Zero — runs in a browser |
-| **PM knowledge required** | Yes — invoke `/write-spec` knowing what a spec is | No — describe it in plain English |
-| **Who can use it** | Terminal-comfortable PMs | Any PM, zero prior knowledge |
-| **Research → diagram → artifact** | Separate commands, manual sequencing | Single flow, one input |
-| **Teaching layer** | Methodology-first, framework-heavy | Embedded in output, ambient learning |
-| **JIRA export** | Via MCP integration (setup required) | Native, no config |
+2. **A user flow diagram** — a Mermaid diagram of the user journey, rendered inline. You can copy the source and paste it into GitHub or Notion and it renders automatically.
 
-**PM Sidekick's position:** zero barrier to entry + full chain in one flow. No terminal. No methodology knowledge. No tool-switching. Describe what you're building and get a complete set of artifacts in under 2 minutes.
+3. **JIRA epics and stories** — structured artifacts with acceptance criteria, story points, and priority. Copy individual stories or export everything as JSON.
 
 ---
 
-## What It Does
+## Who it's for
+
+Honestly, two kinds of people:
+
+**PMs who are still learning** — the ones who Google "what's the difference between an epic and a story" before every sprint. PM Sidekick explains PM concepts as it generates output, so you're learning while getting actual work done. Not watching a tutorial. Actually shipping.
+
+**PMs who just want to move faster** — the ones who already know all of this but hate writing it down. Give it a sentence, get back a full set of artifacts. There's an expert mode that removes all the explanations if you don't need them.
+
+---
+
+## The tech
 
 ```
-Plain English description of your feature or product
-        ↓
-  Market Research Agent
-  → competitive landscape · target user summary · market gaps · PM learning note
-        ↓
-  Flow Diagram Generator
-  → mermaid user journey · decision points · value moment mapping
-        ↓
-  Artifact Export  (Week 2)
-  → JIRA epics · user stories · Notion pages · CSV
-        ↓
-  Epic & Story Writer  (Week 3)
-  → format-flexible stories · learning layer · expert mode toggle
+Frontend    Next.js 14 + TypeScript + Tailwind CSS
+AI          Claude claude-sonnet-4-6 via Anthropic API
+Diagrams    Mermaid.js rendered client-side
+Hosting     Vercel (auto-deploys on git push)
 ```
 
-No templates. No required fields. No methodology knowledge needed.
+The Claude API calls happen server-side via Next.js API routes, so the API key never touches the browser. There's also a Python CLI version (`pm_sidekick.py`) from Week 1 if you want to run it without the web app.
 
 ---
 
-## Who It's For
+## Run it locally
 
-| Persona | Their situation | What they need |
-|---|---|---|
-| 🎓 **The Learner** *(anchor)* | 1–3 yrs PM, learning on the job | Understand + do — explains as it generates |
-| 🔥 **The Overloaded** | Solo PM at a startup, 47 tabs open | Zero-setup speed — paste and go |
-| ⚙️ **The Pragmatist** | Senior PM, hates writing things down | High-quality output from minimal input |
-| 🤖 **The AI-Curious** | Mid-level PM, needs AI credibility | Safe sandbox to experiment and share |
-
----
-
-## Example Output
-
-> Brief: *"finance advisor for someone new to the stock market in their 20s"*
-
-```mermaid
-flowchart TD
-    A([Discovers FirstTrade Advisor]) --> B{Has investing experience?}
-    B -- No --> C[Takes 2-min Risk Quiz]
-    B -- Yes --> D[Gets Personalized Financial Profile]
-    C --> D
-    D --> E{Ready to connect bank?}
-    E -- Not yet --> F[Explores Sample Portfolio]
-    E -- Yes --> G[Links Income & Savings]
-    F --> G
-    subgraph Value Moment
-        G --> H[Receives First Recommendation]
-        H --> I[Sees Plain-Language Explanation]
-        I --> J{Feels confident to invest?}
-        J -- Needs more --> K[Reads Why Behind Advice]
-        J -- Yes --> L[Makes First Investment]
-    end
-```
-
-*Generated in under 90 seconds from a one-line brief. No template. No methodology required.*
-
----
-
-## Visual Artifacts
-
-Built PM-first — discovery, personas, wireframes, and behavioral design before a single line of code.
-
-### Wireframes — 5 Screens
-![PM Sidekick Wireframes](docs/wireframes.svg)
-
-### Product Flow Diagram
-![PM Sidekick Flow Diagram](docs/flow_diagram.svg)
-
-### User Journey Map — The Learner
-![PM Sidekick Journey Map](docs/journey_map.svg)
-
-### Behavioral Map — The 3B Framework
-![PM Sidekick Behavioral Map](docs/behavioral_map.svg)
-
----
-
-## Tech Stack
-
-```
-Frontend      Next.js 14 (App Router) + TypeScript + Tailwind CSS
-AI            Claude claude-sonnet-4-6 via Anthropic API (server-side — key never exposed)
-Diagrams      Mermaid.js rendered client-side
-CLI tool      Python 3.9+ (Week 1 working prototype)
-Hosting       Vercel (auto-deploy from GitHub, serverless API routes)
-```
-
----
-
-## Build Plan
-
-### ✅ Done — Discovery & CLI prototype
-- Market analysis + competitive teardown
-- 4 research-backed personas (The Learner as anchor)
-- Behavioral map — 3B framework (Irrational Labs)
-- Wireframes, flow diagram, journey map
-- `pm_sidekick.py` — working CLI: plain-English brief → research JSON + mermaid diagram
-
-### ✅ Week 1 -2 — React web app (In progress)
-- Next.js 14 app with full UI — Home → Processing → Results
-- Learner mode (includes PM learning note) and Expert mode (raw output only)
-- Market research results rendered as cards
-- Mermaid diagram rendered inline — no external tools needed
-- Copy mermaid source + open in mermaid.live
-- API key secured server-side via Next.js API routes
-- Deploy to Vercel
-
-### 🔜 Week 3 — Artifact export layer
-- Results → JIRA epics, user stories, plain text, or CSV
-- Format picker — adapts to your workflow, not the other way around
-- No agile knowledge required to get structured output
-
-### 🔜 Week 4 — Epic & story writer
-- Plain English → stories in any format (agile, shape-up, free-form)
-- Learning layer explains what each artifact means and why — for The Learner
-- Expert mode toggle removes all coaching for senior PMs
-
-### 🔜 Week 5 — Live demo
-- Deploy to `pmsidekick.vercel.app`
-- GitHub Pages docs site
-
----
-
-## Running Locally
-
-### React web app (recommended)
 ```bash
 git clone https://github.com/infi18/PM-sidekick.git
 cd PM-sidekick
 
 npm install
-cp .env.example .env.local
-# Add your API key to .env.local: ANTHROPIC_API_KEY=your_key_here
+
+# Create a .env.local file with your Anthropic API key
+# Get one free at console.anthropic.com
+echo "ANTHROPIC_API_KEY=your_key_here" > .env.local
 
 npm run dev
 # Open http://localhost:3000
 ```
 
-### CLI prototype (Week 1 original)
-```bash
-pip3 install -r requirements.txt
-echo "ANTHROPIC_API_KEY=your_key_here" > .env
-python3 pm_sidekick.py
-```
+---
 
-> **No API key?** Get one free at [console.anthropic.com](https://console.anthropic.com)
+## What's been built
+
+The discovery process happened before a line of code was written — personas, behavioral design framework, wireframes, competitive analysis. All of it is in the `/docs` folder.
+
+- [x] Full PM discovery — market analysis, 4 personas, behavioral map (Irrational Labs 3B framework)
+- [x] Wireframes — 5 screens, flow diagram, journey map
+- [x] Python CLI prototype (working, tested)
+- [x] Next.js web app with research + flow diagram
+- [ ] JIRA artifact export screen
+- [ ] Epic & story writer with format flexibility (Notion, CSV)
+- [ ] Polish, custom domain, shareable session links
 
 ---
 
-## Design Principles
+## Visual artifacts
 
-| Principle | What it means |
-|---|---|
-| **Plain English first** | No template. Describe it like you'd explain it to a friend. |
-| **Full chain, one tool** | Research → diagram → artifact. No tab switching. |
-| **Teach while doing** | Every output includes optional context in Learner mode. |
-| **Format flexibility** | Adapts to your workflow — JIRA, Notion, CSV, plain text. |
-| **Speed over ceremony** | Default is fast and good enough. Refinement is optional. |
-| **Expert mode available** | One toggle removes all coaching for experienced PMs. |
+All of these render natively on GitHub.
+
+### Wireframes
+![Wireframes](docs/wireframes.svg)
+
+### Flow diagram
+![Flow diagram](docs/flow_diagram.svg)
+
+### User journey map
+![Journey map](docs/journey_map.svg)
+
+### Behavioral map — 3B framework
+![Behavioral map](docs/behavioral_map.svg)
+
+---
+
+## A note on the code
+
+This is a portfolio item I'm building as a side project. It's not production-hardened. There are things I'd do differently with more time — better error handling, proper auth, persistent sessions. But the PM thinking behind it is real: I ran a full discovery process, validated the personas, and applied behavioral design principles from a certification I'm finishing.
+
+The code is the evidence. The thinking is the work.
 
 ---
 
 ## Related
 
-**[AI-PM-ToolKit](https://github.com/infi18/AI-PM-ToolKit)** — Other AI tools for PMs: advanced prompting patterns, feedback analysis, and more.
+**[AI-PM-ToolKit](https://github.com/infi18/AI-PM-ToolKit)** — where I've been building other AI tools for PM workflows: advanced prompting patterns, feedback analysis, structured output experiments.
 
 ---
 
-## About
+Built by **Siddhi Naik** — PM at TransUnion Interactive, 3.5 years in consumer fintech, background in software development.
 
-Senior PM with a background in software development, 3.5+ years in consumer financial products (credit scores, monitoring, identity risk). Behavioral Design for Finance certification in progress (Irrational Labs).
-
-Building at the intersection of product thinking and AI-native development.
-
-📎 [LinkedIn](https://linkedin.com/in/siddhinaik) · 📧 siddhi.naik18@gmail.com · 🐙 [github.com/infi18](https://github.com/infi18)
-
----
-
-*© 2026 Siddhi Naik · Built with Claude claude-sonnet-4-6 · Next.js · Anthropic API · CC BY-NC 4.0*
+[LinkedIn](https://linkedin.com/in/siddhinaik) · [GitHub](https://github.com/infi18) · siddhi.naik18@gmail.com
