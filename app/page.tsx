@@ -58,6 +58,23 @@ export default function Home() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Animate steps while loading
+  // Restore previous session from localStorage on mount
+  useEffect(() => {
+    const savedResearch = localStorage.getItem('pm_sidekick_research');
+    const savedDiagram  = localStorage.getItem('pm_sidekick_diagram');
+    const savedBrief    = localStorage.getItem('pm_sidekick_brief');
+    const savedMode     = localStorage.getItem('pm_sidekick_mode') as Mode | null;
+    if (savedResearch && savedDiagram && savedBrief) {
+      try {
+        setResearch(JSON.parse(savedResearch));
+        setDiagram(savedDiagram);
+        setBrief(savedBrief);
+        if (savedMode) setMode(savedMode);
+        setStage('results');
+      } catch { /* corrupt data — start fresh */ }
+    }
+  }, []);
+
   useEffect(() => {
     if (stage !== 'loading') return;
     setStep(0);
@@ -85,9 +102,11 @@ export default function Home() {
       setDiagram(data.diagram);
       setStage('results');
       setActiveTab('research');
-      // Store for export page
-      sessionStorage.setItem('pm_sidekick_research', JSON.stringify(data.research));
-      sessionStorage.setItem('pm_sidekick_brief', brief);
+      // Store for export page + session restore
+      localStorage.setItem('pm_sidekick_research', JSON.stringify(data.research));
+      localStorage.setItem('pm_sidekick_diagram', data.diagram);
+      localStorage.setItem('pm_sidekick_brief', brief);
+      localStorage.setItem('pm_sidekick_mode', mode);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
       setStage('home');
@@ -101,8 +120,15 @@ export default function Home() {
   }
 
   function reset() {
+    // Clear saved session
+    localStorage.removeItem('pm_sidekick_research');
+    localStorage.removeItem('pm_sidekick_diagram');
+    localStorage.removeItem('pm_sidekick_brief');
+    localStorage.removeItem('pm_sidekick_mode');
     setStage('home');
     setBrief('');
+    setResearch(null);
+    setDiagram('');
     setTimeout(() => textareaRef.current?.focus(), 100);
   }
 
@@ -440,7 +466,7 @@ export default function Home() {
               </a>
               <button disabled
                 className="text-xs text-slate-400 border border-slate-200 px-4 py-2.5 rounded-xl cursor-not-allowed opacity-50">
-                Notion export (Week 3)
+                Notion export — coming soon
               </button>
             </div>
           </div>
