@@ -274,41 +274,39 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col items-center px-4 md:px-6 py-10 md:py-16">
 
-        {/* Centered hero — badge, heading, description, mode toggle */}
+        {/* Centered hero */}
         <div className="w-full max-w-2xl text-center mb-8 animate-fade-up">
           <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-full mb-5 border border-indigo-100">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse-slow" />
             Research · Flow diagram · JIRA artifacts
           </div>
           <h1 className="font-display text-4xl md:text-5xl text-slate-900 leading-tight mb-4">
-            Describe what you&apos;re building.
+            Describe what you{`'`}re building.
           </h1>
           <p className="text-slate-500 text-base leading-relaxed mb-6">
-            PM Sidekick turns a plain-English brief into competitive research,
-            a user flow diagram, and JIRA-ready artifacts. No templates. No methodology required.
+            Plain-English brief in. Research, flow diagram, and JIRA artifacts out.
           </p>
-          {/* Mode toggle */}
-          <div className="flex items-center justify-center gap-1 bg-slate-100 p-1 rounded-lg w-fit mx-auto">
-            {(['learner', 'expert'] as Mode[]).map(m => (
-              <button key={m} onClick={() => setMode(m)}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                  mode === m
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}>
-                {m === 'learner' ? '🎓 Learner mode' : '⚡ Expert mode'}
-              </button>
-            ))}
-          </div>
+
         </div>
 
-        {/* Input + Preview side by side */}
-        <div className="w-full max-w-4xl animate-fade-up animate-delay-100">
-          <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-4 items-stretch">
+        {/* Input + Preview — desktop side by side, mobile input first */}
+        <div className="w-full max-w-6xl animate-fade-up animate-delay-100">
+          <div className="flex flex-col lg:grid lg:grid-cols-[65%_33%] gap-4 items-stretch">
 
-            {/* Input — takes 3/5 */}
-            <div>
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all h-full flex flex-col">
+            {/* Input — always first in DOM so it shows on top on mobile */}
+            <div className="flex flex-col">
+              {/* Mode toggle above input */}
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg w-fit mb-3">
+                {(['learner', 'expert'] as Mode[]).map(m => (
+                  <button key={m} onClick={() => setMode(m)}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                      mode === m ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                    }`}>
+                    {m === 'learner' ? '🎓 Learner mode' : '⚡ Expert mode'}
+                  </button>
+                ))}
+              </div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all flex flex-col h-full">
                 <textarea
                   ref={textareaRef}
                   value={brief}
@@ -319,7 +317,11 @@ export default function Home() {
                   className="w-full px-5 pt-4 pb-2 text-slate-800 placeholder-slate-400 resize-none outline-none text-[15px] leading-relaxed bg-transparent flex-1"
                 />
                 <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100">
-                  <span className="text-xs text-slate-400 hidden sm:block">⌘ + Enter to generate</span>
+                  {/* Fix 6: hint when button is disabled */}
+                  {brief.trim().length > 0 && brief.trim().length < 10
+                    ? <span className="text-xs text-amber-500">Keep going — a bit more detail</span>
+                    : <span className="text-xs text-slate-400 hidden sm:block">⌘ + Enter to generate</span>
+                  }
                   <button onClick={generate} disabled={brief.trim().length < 10}
                     className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2 rounded-lg transition-all active:scale-95 ml-auto">
                     Generate artifacts →
@@ -327,21 +329,53 @@ export default function Home() {
                 </div>
               </div>
               {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+
+              {/* Fix 1: Example chips — compact, left-aligned, natural width */}
+              <div className="mt-4">
+                <div className="flex flex-col gap-1.5">
+                  {EXAMPLES.map((ex, i) => (
+                    <button key={i}
+                      onClick={() => {
+                        setBrief(ex);
+                        setPreviewIndex(i);
+                        setPreviewTab('research');
+                      }}
+                      className={`text-left text-sm px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2 ${
+                        previewIndex === i && brief === ex
+                          ? 'bg-indigo-50 text-indigo-700 border-indigo-300'
+                          : 'text-slate-600 bg-white hover:bg-indigo-50 hover:text-indigo-700 border-slate-200 hover:border-indigo-200'
+                      }`}>
+                      {/* Fix 4: visual active indicator */}
+                      <span className={`shrink-0 w-1.5 h-1.5 rounded-full transition-all ${
+                        previewIndex === i && brief === ex ? 'bg-indigo-500' : 'bg-slate-200'
+                      }`}/>
+                      {ex}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Preview panel — takes 2/5 */}
-            <div>
+            {/* Preview panel — below input on mobile, right on desktop */}
+            <div className="flex flex-col">
+
               <div
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-opacity duration-400 h-full flex flex-col"
+                className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-opacity duration-400 flex flex-col flex-1"
                 style={{ opacity: previewFading ? 0 : 1 }}
               >
                 {/* Preview header */}
                 <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 truncate">
-                      {PREVIEWS[previewIndex].product}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider bg-indigo-50 px-1.5 py-0.5 rounded">Example</span>
+                      <p className="text-sm font-semibold text-slate-900 truncate">{PREVIEWS[previewIndex].product}</p>
+                    </div>
+                    {/* Fix 3: show full brief on hover via title attr */}
+                    <p className="text-xs text-slate-400 truncate" title={PREVIEWS[previewIndex].brief}>
+                      &ldquo;{PREVIEWS[previewIndex].brief}&rdquo;
                     </p>
                   </div>
+                  {/* Fix 7: dot nav also updates input */}
                   <div className="flex gap-1 shrink-0">
                     {PREVIEWS.map((_, i) => (
                       <button key={i}
@@ -379,7 +413,7 @@ export default function Home() {
 
                 {/* Research tab */}
                 {previewTab === 'research' && (
-                  <div className="px-4 py-3 space-y-3">
+                  <div className="px-4 py-3 space-y-3 flex-1 overflow-y-auto">
                     <div>
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Competitors</p>
                       {PREVIEWS[previewIndex].competitors.map((c, i) => (
@@ -405,26 +439,42 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Diagram tab */}
+                {/* Diagram tab — static preview SVG, no layout shift */}
                 {previewTab === 'diagram' && (
-                  <div className="px-3 py-3">
-                    <div className="bg-slate-900 rounded-xl p-3 font-mono text-[10px] leading-relaxed overflow-x-auto">
-                      {PREVIEWS[previewIndex].diagram.map((line, i) => (
-                        <div key={i} className={
-                          line.includes('subgraph') || line.includes('end') ? 'text-slate-400' :
-                          line.includes('{') || line.includes('}') ? 'text-amber-400' :
-                          line.includes('-->') || line.includes('--') ? 'text-slate-400' :
-                          'text-emerald-400'
-                        }>{line}</div>
-                      ))}
+                  <div className="px-3 py-3 flex-1">
+                    <div className="bg-slate-50 rounded-xl p-3 flex flex-col items-center gap-1.5" style={{minHeight: '200px'}}>
+                      {PREVIEWS[previewIndex].diagram.slice(1, 6).map((line, i) => {
+                        const isDecision = line.includes('{');
+                        const isNode = line.includes('[') || line.includes('([');
+                        const isArrow = line.includes('-->') || line.includes('--');
+                        if (isArrow) return (
+                          <div key={i} className="flex flex-col items-center">
+                            <div className="w-px h-4 bg-slate-300"/>
+                            <div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[5px] border-l-transparent border-r-transparent border-t-slate-300"/>
+                          </div>
+                        );
+                        if (isDecision) return (
+                          <div key={i} className="bg-amber-50 border border-amber-200 px-3 py-1 text-xs text-amber-700 font-medium" style={{clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' ,width:'120px',height:'48px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                            {line.replace(/.*\{(.*)\}.*/, '$1').trim()}
+                          </div>
+                        );
+                        if (isNode) return (
+                          <div key={i} className="bg-white border border-slate-200 rounded px-3 py-1 text-xs text-slate-700 text-center shadow-sm max-w-[180px] truncate">
+                            {line.replace(/.*[\[\(]+([^\]\)]+)[\]\)]+.*/, '$1').trim()}
+                          </div>
+                        );
+                        return null;
+                      })}
+                      <p className="text-xs text-slate-400 mt-2 text-center pt-1">
+                        Full diagram renders after generating →
+                      </p>
                     </div>
-                    <p className="text-xs text-slate-400 mt-2 text-center">Renders as a visual flowchart</p>
                   </div>
                 )}
 
                 {/* JIRA tab */}
                 {previewTab === 'jira' && (
-                  <div className="px-3 py-3 space-y-2">
+                  <div className="px-3 py-3 space-y-2 flex-1 overflow-y-auto">
                     {PREVIEWS[previewIndex].epics.map((epic, i) => (
                       <div key={i} className="border border-slate-200 rounded-xl overflow-hidden">
                         <div className="flex items-center gap-2 px-3 py-2 bg-slate-50">
@@ -452,46 +502,24 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Examples below input+preview */}
-          <div className="mt-5">
-            <p className="text-xs text-slate-400 uppercase tracking-wider mb-3">Try an example</p>
-            <div className="flex flex-col gap-2">
-              {EXAMPLES.map((ex, i) => (
-                <button key={i}
-                  onClick={() => {
-                    setBrief(ex);
-                    setPreviewIndex(i);
-                    setPreviewTab('research');
-                  }}
-                  className={`flex-1 text-left sm:text-center text-xs px-3 py-2.5 rounded-xl border transition-all ${
-                    previewIndex === i
-                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                      : 'text-slate-500 bg-white hover:bg-indigo-50 hover:text-indigo-700 border-slate-200 hover:border-indigo-200'
-                  }`}>
-                  {ex}
-                </button>
+          {/* FAQ Section */}
+          <div className="mt-16 md:mt-20 max-w-6xl w-full mx-auto">
+            <h2 className="font-display text-2xl text-slate-900 mb-6 text-center">Frequently asked questions</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { q: "Do I need to know agile to use this?", a: "No. You describe what you're building in plain English — PM Sidekick figures out the structure. No methodology knowledge required." },
+                { q: "What's the difference between Learner and Expert mode?", a: "Learner mode includes a PM learning note explaining what the research means and why it matters. Expert mode gives you raw output with no explanation." },
+                { q: "How is this different from Claude Code PM plugins?", a: "Claude Code plugins require terminal installation and PM methodology knowledge. PM Sidekick runs in a browser with zero setup — describe it, get artifacts." },
+                { q: "Can I use this for any type of product?", a: "Yes — consumer apps, B2B tools, internal tools, marketplaces. As long as you can describe what you're building in a sentence, PM Sidekick can work with it." },
+                { q: "Is my data stored anywhere?", a: "Your last session is saved locally in your browser so you can return to it. Nothing is sent to any server except the Claude API to generate results." },
+                { q: "How accurate is the research?", a: "PM Sidekick uses Claude to synthesize competitive context. Treat it as a strong starting point — verify with your own primary research before shipping." },
+              ].map((faq, i) => (
+                <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                  <p className="font-semibold text-sm text-slate-900 mb-2">{faq.q}</p>
+                  <p className="text-sm text-slate-500 leading-relaxed">{faq.a}</p>
+                </div>
               ))}
             </div>
-          </div>
-        </div>
-
-        {/* FAQ Section */}
-        <div className="w-full max-w-4xl mt-16 md:mt-20">
-          <h2 className="font-display text-2xl text-slate-900 mb-6 text-center">Frequently asked questions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { q: "Do I need to know agile to use this?", a: "No. You describe what you're building in plain English — PM Sidekick figures out the structure. No methodology knowledge required." },
-              { q: "What's the difference between Learner and Expert mode?", a: "Learner mode includes a PM learning note explaining what the research means and why it matters. Expert mode gives you raw output with no explanation." },
-              { q: "How is this different from Claude Code PM plugins?", a: "Claude Code plugins require terminal installation and PM methodology knowledge. PM Sidekick runs in a browser with zero setup — describe it, get artifacts." },
-              { q: "Can I use this for any type of product?", a: "Yes — consumer apps, B2B tools, internal tools, marketplaces. As long as you can describe what you're building in a sentence, PM Sidekick can work with it." },
-              { q: "Is my data stored anywhere?", a: "Your last session is saved locally in your browser so you can return to it. Nothing is sent to any server except the Claude API to generate results." },
-              { q: "How accurate is the research?", a: "PM Sidekick uses Claude to synthesize competitive context. Treat it as a strong starting point — verify with your own primary research before shipping." },
-            ].map((faq, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-                <p className="font-semibold text-sm text-slate-900 mb-2">{faq.q}</p>
-                <p className="text-sm text-slate-500 leading-relaxed">{faq.a}</p>
-              </div>
-            ))}
           </div>
         </div>
       </div>
