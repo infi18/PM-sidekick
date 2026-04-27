@@ -36,7 +36,7 @@ type Stage = 'home' | 'loading' | 'results';
 const EXAMPLES = [
   "Finance advisor for someone new to the stock market in their 20s",
   "A Slack bot that triages customer support tickets automatically",
-  "Credit coaching tool for young adults who don't understand credit scores",
+  "A job search tool for recent grads who don't know where to start",
 ];
 
 // ── Loading steps ─────────────────────────────────────────────────
@@ -155,7 +155,7 @@ export default function Home() {
         <div className="max-w-2xl w-full text-center mb-10 animate-fade-up">
           <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-full mb-6 border border-indigo-100">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse-slow" />
-            Week 1 — Research + Flow Diagram
+            Research · Flow diagram · JIRA artifacts
           </div>
           <h1 className="font-display text-5xl text-slate-900 leading-tight mb-4">
             Describe what you're building.
@@ -189,7 +189,7 @@ export default function Home() {
               value={brief}
               onChange={e => setBrief(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate(); }}
-              placeholder="e.g. A credit coaching tool for young adults who don't understand how credit scores work..."
+              placeholder="e.g. Finance advisor for someone new to the stock market in their 20s..."
               rows={4}
               className="w-full px-5 pt-4 pb-2 text-slate-800 placeholder-slate-400 resize-none outline-none text-[15px] leading-relaxed bg-transparent"
             />
