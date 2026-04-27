@@ -39,6 +39,111 @@ const EXAMPLES = [
   "A job search tool for recent grads who don't know where to start",
 ];
 
+
+const PREVIEWS = [
+  {
+    brief: "Finance advisor for someone new to the stock market in their 20s",
+    product: "FirstTrade Advisor",
+    oneliner: "AI-powered financial coaching for first-time investors",
+    competitors: [
+      { name: "Robinhood", gap: "No education layer" },
+      { name: "Acorns", gap: "Passive only, no coaching" },
+    ],
+    gaps: ["No plain-language investing guidance", "Fear of loss never addressed"],
+    note: "This market has high awareness but low trust. Lead with safety — not returns.",
+    diagram: [
+      "flowchart TD",
+      "  A([User feels lost about investing])",
+      "  A --> B{Has experience?}",
+      "  B -- No --> C[Takes risk quiz]",
+      "  B -- Yes --> D[Gets profile]",
+      "  C --> D --> E{Ready to invest?}",
+      "    subgraph Value Moment",
+      "      E -- Yes --> F[First recommendation]",
+      "      F --> G[Plain-language explanation]",
+      "    end",
+    ],
+    epics: [
+      { id: "EPIC-1", title: "Onboarding & Risk Profiling", stories: [
+        { id: "S-1-1", title: "Risk quiz flow", priority: "High", points: 3 },
+        { id: "S-1-2", title: "Plain-language profile summary", priority: "Medium", points: 2 },
+      ]},
+      { id: "EPIC-2", title: "First Recommendation", stories: [
+        { id: "S-2-1", title: "Personalized suggestion engine", priority: "High", points: 5 },
+        { id: "S-2-2", title: "Why-behind-advice explainer", priority: "High", points: 3 },
+      ]},
+    ],
+  },
+  {
+    brief: "A Slack bot that triages customer support tickets automatically",
+    product: "TriageBot",
+    oneliner: "AI that classifies and routes support tickets in real time",
+    competitors: [
+      { name: "Zendesk AI", gap: "Expensive, complex setup" },
+      { name: "Intercom", gap: "Chat-first, weak ticket routing" },
+    ],
+    gaps: ["No zero-config triage for small teams", "Manual routing kills response time"],
+    note: "Small support teams spend 40% of time routing, not resolving. That's the real pain.",
+    diagram: [
+      "flowchart TD",
+      "  A([Ticket arrives in Slack])",
+      "  A --> B[AI classifies intent]",
+      "  B --> C{Confidence > 80%?}",
+      "  C -- Yes --> D[Auto-routes to agent]",
+      "  C -- No --> E[Flags for review]",
+      "  D --> F[Agent notified]",
+      "    subgraph Resolution",
+      "      F --> G[Agent resolves]",
+      "      G --> H[Ticket closed]",
+      "    end",
+    ],
+    epics: [
+      { id: "EPIC-1", title: "Ticket Classification", stories: [
+        { id: "S-1-1", title: "Intent detection model", priority: "High", points: 5 },
+        { id: "S-1-2", title: "Confidence threshold config", priority: "Medium", points: 2 },
+      ]},
+      { id: "EPIC-2", title: "Slack Integration", stories: [
+        { id: "S-2-1", title: "Slack app install + auth", priority: "High", points: 3 },
+        { id: "S-2-2", title: "Agent notification format", priority: "Low", points: 1 },
+      ]},
+    ],
+  },
+  {
+    brief: "A job search tool for recent grads who don't know where to start",
+    product: "LaunchPad",
+    oneliner: "Guided job search for first-time candidates with no network",
+    competitors: [
+      { name: "LinkedIn", gap: "Overwhelming, assumes network" },
+      { name: "Indeed", gap: "No guidance, just listings" },
+    ],
+    gaps: ["No step-by-step job search playbook", "Entry-level candidates invisible"],
+    note: "The job search problem for grads is confidence, not listings. They need a roadmap.",
+    diagram: [
+      "flowchart TD",
+      "  A([Grad feels lost about job search])",
+      "  A --> B[Completes skills assessment]",
+      "  B --> C[Gets personalized roadmap]",
+      "  C --> D{Has target role?}",
+      "  D -- No --> E[Role explorer]",
+      "  D -- Yes --> F[Resume builder]",
+      "    subgraph Application Loop",
+      "      F --> G[Apply to matches]",
+      "      G --> H[Track applications]",
+      "    end",
+    ],
+    epics: [
+      { id: "EPIC-1", title: "Skills Assessment", stories: [
+        { id: "S-1-1", title: "Skills quiz + scoring", priority: "High", points: 3 },
+        { id: "S-1-2", title: "Personalized roadmap output", priority: "High", points: 5 },
+      ]},
+      { id: "EPIC-2", title: "Job Matching", stories: [
+        { id: "S-2-1", title: "Role recommendation engine", priority: "High", points: 5 },
+        { id: "S-2-2", title: "Application tracker", priority: "Medium", points: 2 },
+      ]},
+    ],
+  },
+];
+
 // ── Loading steps ─────────────────────────────────────────────────
 const STEPS = [
   { id: 1, label: 'Market research agent', sub: 'Competitive landscape · Target users · Market gaps' },
@@ -55,9 +160,26 @@ export default function Home() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'research' | 'diagram'>('research');
   const [copied, setCopied] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [previewFading, setPreviewFading] = useState(false);
+  const [previewTab, setPreviewTab] = useState<'research' | 'diagram' | 'jira'>('research');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Animate steps while loading
+  // Cycle through preview examples
+  useEffect(() => {
+    if (stage !== 'home') return;
+    const interval = setInterval(() => {
+      setPreviewFading(true);
+      setTimeout(() => {
+        setPreviewIndex(i => (i + 1) % PREVIEWS.length);
+        setPreviewTab('research');
+        setPreviewFading(false);
+      }, 400);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [stage]);
+
   // Restore previous session from localStorage on mount
   useEffect(() => {
     const savedResearch = localStorage.getItem('pm_sidekick_research');
@@ -137,7 +259,7 @@ export default function Home() {
     <main className="min-h-screen bg-slate-50 flex flex-col">
       {/* Nav */}
       <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
           <span className="font-display text-xl text-slate-900">
             PM<span className="text-indigo-600">Sidekick</span>
           </span>
@@ -150,79 +272,232 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-6 py-10 md:py-20">
-        <div className="max-w-2xl w-full text-center mb-10 animate-fade-up">
-          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-full mb-6 border border-indigo-100">
+      <div className="flex-1 flex flex-col items-center px-4 md:px-6 py-10 md:py-16">
+
+        {/* Centered hero — badge, heading, description, mode toggle */}
+        <div className="w-full max-w-2xl text-center mb-8 animate-fade-up">
+          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-full mb-5 border border-indigo-100">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse-slow" />
             Research · Flow diagram · JIRA artifacts
           </div>
-          <h1 className="font-display text-5xl text-slate-900 leading-tight mb-4">
-            Describe what you're building.
+          <h1 className="font-display text-4xl md:text-5xl text-slate-900 leading-tight mb-4">
+            Describe what you&apos;re building.
           </h1>
-          <p className="text-slate-500 text-lg leading-relaxed">
-            PM Sidekick turns a plain-English brief into competitive research
-            and a user flow diagram — in under 2 minutes.
-            No templates. No methodology required.
+          <p className="text-slate-500 text-base leading-relaxed mb-6">
+            PM Sidekick turns a plain-English brief into competitive research,
+            a user flow diagram, and JIRA-ready artifacts. No templates. No methodology required.
           </p>
-        </div>
-
-        {/* Mode toggle */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg mb-6 animate-fade-up animate-delay-100">
-          {(['learner', 'expert'] as Mode[]).map(m => (
-            <button key={m} onClick={() => setMode(m)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                mode === m
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}>
-              {m === 'learner' ? '🎓 Learner mode' : '⚡ Expert mode'}
-            </button>
-          ))}
-        </div>
-
-        {/* Input */}
-        <div className="w-full max-w-2xl animate-fade-up animate-delay-200">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all">
-            <textarea
-              ref={textareaRef}
-              value={brief}
-              onChange={e => setBrief(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate(); }}
-              placeholder="e.g. Finance advisor for someone new to the stock market in their 20s..."
-              rows={4}
-              className="w-full px-5 pt-4 pb-2 text-slate-800 placeholder-slate-400 resize-none outline-none text-[15px] leading-relaxed bg-transparent"
-            />
-            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100">
-              <span className="text-xs text-slate-400">⌘ + Enter to generate</span>
-              <button onClick={generate} disabled={brief.trim().length < 10}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2 rounded-lg transition-all active:scale-95">
-                Generate artifacts →
+          {/* Mode toggle */}
+          <div className="flex items-center justify-center gap-1 bg-slate-100 p-1 rounded-lg w-fit mx-auto">
+            {(['learner', 'expert'] as Mode[]).map(m => (
+              <button key={m} onClick={() => setMode(m)}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  mode === m
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}>
+                {m === 'learner' ? '🎓 Learner mode' : '⚡ Expert mode'}
               </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Input + Preview side by side */}
+        <div className="w-full max-w-4xl animate-fade-up animate-delay-100">
+          <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-4 items-stretch">
+
+            {/* Input — takes 3/5 */}
+            <div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all h-full flex flex-col">
+                <textarea
+                  ref={textareaRef}
+                  value={brief}
+                  onChange={e => setBrief(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate(); }}
+                  placeholder="e.g. Finance advisor for someone new to the stock market in their 20s..."
+                  rows={4}
+                  className="w-full px-5 pt-4 pb-2 text-slate-800 placeholder-slate-400 resize-none outline-none text-[15px] leading-relaxed bg-transparent flex-1"
+                />
+                <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100">
+                  <span className="text-xs text-slate-400 hidden sm:block">⌘ + Enter to generate</span>
+                  <button onClick={generate} disabled={brief.trim().length < 10}
+                    className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2 rounded-lg transition-all active:scale-95 ml-auto">
+                    Generate artifacts →
+                  </button>
+                </div>
+              </div>
+              {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+            </div>
+
+            {/* Preview panel — takes 2/5 */}
+            <div>
+              <div
+                className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-opacity duration-400 h-full flex flex-col"
+                style={{ opacity: previewFading ? 0 : 1 }}
+              >
+                {/* Preview header */}
+                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 truncate">
+                      {PREVIEWS[previewIndex].product}
+                    </p>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    {PREVIEWS.map((_, i) => (
+                      <button key={i}
+                        onClick={() => {
+                          setPreviewFading(true);
+                          setTimeout(() => {
+                            setPreviewIndex(i);
+                            setBrief(EXAMPLES[i]);
+                            setPreviewTab('research');
+                            setPreviewFading(false);
+                          }, 300);
+                        }}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          i === previewIndex ? 'bg-indigo-500 w-4' : 'bg-slate-200 w-1.5 hover:bg-slate-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex border-b border-slate-100">
+                  {(['research', 'diagram', 'jira'] as const).map(t => (
+                    <button key={t}
+                      onClick={() => setPreviewTab(t)}
+                      className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                        previewTab === t
+                          ? 'text-indigo-600 border-b-2 border-indigo-500'
+                          : 'text-slate-400 hover:text-slate-600'
+                      }`}>
+                      {t === 'research' ? 'Research' : t === 'diagram' ? 'Diagram' : 'JIRA'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Research tab */}
+                {previewTab === 'research' && (
+                  <div className="px-4 py-3 space-y-3">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Competitors</p>
+                      {PREVIEWS[previewIndex].competitors.map((c, i) => (
+                        <div key={i} className="mb-1.5">
+                          <p className="text-xs font-semibold text-slate-800">{c.name}</p>
+                          <p className="text-xs text-teal-600">↳ {c.gap}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Market gaps</p>
+                      {PREVIEWS[previewIndex].gaps.map((g, i) => (
+                        <div key={i} className="flex items-start gap-1.5 mb-1">
+                          <span className="mt-0.5 shrink-0 w-3.5 h-3.5 rounded-full bg-amber-100 text-amber-600 text-[8px] flex items-center justify-center font-bold">{i+1}</span>
+                          <p className="text-xs text-slate-600">{g}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-teal-50 rounded-xl px-3 py-2 border border-teal-100">
+                      <p className="text-xs font-semibold text-teal-600 mb-0.5">PM learning note</p>
+                      <p className="text-xs text-slate-600">{PREVIEWS[previewIndex].note}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Diagram tab */}
+                {previewTab === 'diagram' && (
+                  <div className="px-3 py-3">
+                    <div className="bg-slate-900 rounded-xl p-3 font-mono text-[10px] leading-relaxed overflow-x-auto">
+                      {PREVIEWS[previewIndex].diagram.map((line, i) => (
+                        <div key={i} className={
+                          line.includes('subgraph') || line.includes('end') ? 'text-slate-400' :
+                          line.includes('{') || line.includes('}') ? 'text-amber-400' :
+                          line.includes('-->') || line.includes('--') ? 'text-slate-400' :
+                          'text-emerald-400'
+                        }>{line}</div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-2 text-center">Renders as a visual flowchart</p>
+                  </div>
+                )}
+
+                {/* JIRA tab */}
+                {previewTab === 'jira' && (
+                  <div className="px-3 py-3 space-y-2">
+                    {PREVIEWS[previewIndex].epics.map((epic, i) => (
+                      <div key={i} className="border border-slate-200 rounded-xl overflow-hidden">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50">
+                          <span className="text-xs font-bold text-indigo-500 font-mono">{epic.id}</span>
+                          <span className="text-xs font-semibold text-slate-800 truncate">{epic.title}</span>
+                        </div>
+                        <div className="px-3 py-2 space-y-1">
+                          {epic.stories.map((s, j) => (
+                            <div key={j} className="flex items-center gap-2">
+                              <span className="text-xs text-slate-400 font-mono shrink-0">{s.id}</span>
+                              <span className="text-xs text-slate-600 flex-1 truncate">{s.title}</span>
+                              <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                                s.priority === 'High' ? 'bg-red-50 text-red-500' :
+                                s.priority === 'Medium' ? 'bg-amber-50 text-amber-500' :
+                                'bg-slate-100 text-slate-400'}`}>{s.priority}</span>
+                              <span className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded shrink-0">{s.points}pt</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {error && (
-            <p className="mt-3 text-sm text-red-500 text-center">{error}</p>
-          )}
-
-          {/* Examples */}
-          <div className="mt-6">
-            <p className="text-xs text-slate-400 uppercase tracking-wider mb-3 text-center">Try an example</p>
+          {/* Examples below input+preview */}
+          <div className="mt-5">
+            <p className="text-xs text-slate-400 uppercase tracking-wider mb-3">Try an example</p>
             <div className="flex flex-col gap-2">
               {EXAMPLES.map((ex, i) => (
-                <button key={i} onClick={() => setBrief(ex)}
-                  className="text-left text-sm text-slate-600 bg-white hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 hover:border-indigo-200 px-4 py-3 rounded-xl transition-all">
+                <button key={i}
+                  onClick={() => {
+                    setBrief(ex);
+                    setPreviewIndex(i);
+                    setPreviewTab('research');
+                  }}
+                  className={`flex-1 text-left sm:text-center text-xs px-3 py-2.5 rounded-xl border transition-all ${
+                    previewIndex === i
+                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                      : 'text-slate-500 bg-white hover:bg-indigo-50 hover:text-indigo-700 border-slate-200 hover:border-indigo-200'
+                  }`}>
                   {ex}
                 </button>
               ))}
             </div>
           </div>
         </div>
+
+        {/* FAQ Section */}
+        <div className="w-full max-w-4xl mt-16 md:mt-20">
+          <h2 className="font-display text-2xl text-slate-900 mb-6 text-center">Frequently asked questions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { q: "Do I need to know agile to use this?", a: "No. You describe what you're building in plain English — PM Sidekick figures out the structure. No methodology knowledge required." },
+              { q: "What's the difference between Learner and Expert mode?", a: "Learner mode includes a PM learning note explaining what the research means and why it matters. Expert mode gives you raw output with no explanation." },
+              { q: "How is this different from Claude Code PM plugins?", a: "Claude Code plugins require terminal installation and PM methodology knowledge. PM Sidekick runs in a browser with zero setup — describe it, get artifacts." },
+              { q: "Can I use this for any type of product?", a: "Yes — consumer apps, B2B tools, internal tools, marketplaces. As long as you can describe what you're building in a sentence, PM Sidekick can work with it." },
+              { q: "Is my data stored anywhere?", a: "Your last session is saved locally in your browser so you can return to it. Nothing is sent to any server except the Claude API to generate results." },
+              { q: "How accurate is the research?", a: "PM Sidekick uses Claude to synthesize competitive context. Treat it as a strong starting point — verify with your own primary research before shipping." },
+            ].map((faq, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                <p className="font-semibold text-sm text-slate-900 mb-2">{faq.q}</p>
+                <p className="text-sm text-slate-500 leading-relaxed">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+      <footer className="border-t border-slate-200 py-4 text-center text-xs text-slate-400 mt-8">
         © 2026 Siddhi Naik · PM Sidekick · CC BY-NC 4.0 ·{' '}
         <a href="https://github.com/infi18/PM-sidekick" className="hover:text-slate-600 underline" target="_blank" rel="noreferrer">
           github.com/infi18/PM-sidekick
@@ -231,7 +506,7 @@ export default function Home() {
     </main>
   );
 
-  // ── LOADING ───────────────────────────────────────────────────────
+    // ── LOADING ───────────────────────────────────────────────────────
   if (stage === 'loading') return (
     <main className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-6">
       <div className="max-w-md w-full">
