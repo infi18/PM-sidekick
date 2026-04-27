@@ -137,7 +137,7 @@ export default function Home() {
     <main className="min-h-screen bg-slate-50 flex flex-col">
       {/* Nav */}
       <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
           <span className="font-display text-xl text-slate-900">
             PM<span className="text-indigo-600">Sidekick</span>
           </span>
@@ -151,7 +151,7 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-20">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-6 py-10 md:py-20">
         <div className="max-w-2xl w-full text-center mb-10 animate-fade-up">
           <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-full mb-6 border border-indigo-100">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse-slow" />
@@ -300,7 +300,7 @@ export default function Home() {
     <main className="min-h-screen bg-slate-50 flex flex-col">
       {/* Nav */}
       <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 min-h-14 flex items-center justify-between flex-wrap gap-2 py-2">
           <button onClick={reset} className="font-display text-xl text-slate-900 hover:text-indigo-600 transition-colors">
             PM<span className="text-indigo-600">Sidekick</span>
           </button>
@@ -313,7 +313,7 @@ export default function Home() {
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto w-full px-6 py-8 flex-1">
+      <div className="max-w-6xl mx-auto w-full px-4 md:px-6 py-6 flex-1">
         {/* Brief recap */}
         <div className="mb-6 animate-fade-up">
           <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Your brief</p>
@@ -342,7 +342,7 @@ export default function Home() {
 
         {/* Research tab */}
         {activeTab === 'research' && research && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
             {/* Target users */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Target users</h3>
@@ -421,7 +421,7 @@ export default function Home() {
         {activeTab === 'diagram' && (
           <div className="animate-fade-up">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 flex-wrap gap-2">
                 <span className="text-sm font-medium text-slate-700">User flow diagram</span>
                 <div className="flex gap-2">
                   <button onClick={copyDiagram}
@@ -454,7 +454,7 @@ export default function Home() {
 
         {/* Export strip */}
         <div className="mt-8 pt-6 border-t border-slate-200 animate-fade-up animate-delay-300">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-slate-700 mb-1">Ready to export?</p>
               <p className="text-xs text-slate-400">Generate JIRA epics and user stories from your research</p>

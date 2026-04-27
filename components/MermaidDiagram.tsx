@@ -66,7 +66,7 @@ export default function MermaidDiagram({ chart }: MermaidProps) {
   return (
     <div
       ref={ref}
-      className="w-full flex justify-center [&>svg]:max-w-full [&>svg]:h-auto"
+      className="w-full overflow-x-auto flex justify-center [&>svg]:max-w-full [&>svg]:h-auto [&>svg]:min-w-0"
     />
   );
 }

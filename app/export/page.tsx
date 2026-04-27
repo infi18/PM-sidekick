@@ -132,7 +132,7 @@ export default function ExportPage() {
     <main className="min-h-screen bg-slate-50 flex flex-col">
       {/* Nav */}
       <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 min-h-14 flex items-center justify-between flex-wrap gap-2 py-2">
           <span className="font-display text-xl text-slate-900">
             PM<span className="text-indigo-600">Sidekick</span>
           </span>
@@ -151,7 +151,7 @@ export default function ExportPage() {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto w-full px-6 py-8 flex-1">
+      <div className="max-w-5xl mx-auto w-full px-4 md:px-6 py-6 flex-1">
 
         {/* Header */}
         <div className="mb-6 animate-fade-up">
@@ -200,7 +200,7 @@ export default function ExportPage() {
         {/* Stats strip — shows as soon as first epic arrives */}
         {artifacts && (
           <>
-            <div className="grid grid-cols-3 gap-4 mb-6 animate-fade-up">
+            <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6 animate-fade-up">
               {[
                 { label: 'Epics',         value: artifacts.epics.length,  color: 'text-indigo-600', bg: 'bg-indigo-50'  },
                 { label: 'User stories',  value: totalStories,             color: 'text-teal-600',   bg: 'bg-teal-50'    },
@@ -219,7 +219,7 @@ export default function ExportPage() {
                 <div key={epic.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-fade-up">
                   {/* Epic header */}
                   <button onClick={() => toggleEpic(epic.id)}
-                    className="w-full text-left px-6 py-5 flex items-start justify-between gap-4 hover:bg-slate-50 transition-colors">
+                    className="w-full text-left px-4 md:px-6 py-4 flex items-start justify-between gap-3 hover:bg-slate-50 transition-colors">
                     <div className="flex items-start gap-3">
                       <span className="shrink-0 mt-0.5 text-xs font-bold text-indigo-500 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded font-mono">
                         {epic.id}
@@ -245,12 +245,12 @@ export default function ExportPage() {
                       <div className="space-y-3">
                         {epic.stories.map((story) => (
                           <div key={story.id} className="border border-slate-200 rounded-xl overflow-hidden">
-                            <div className="flex items-start justify-between gap-3 px-4 py-3 bg-slate-50">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 px-4 py-3 bg-slate-50">
                               <div className="flex items-start gap-2">
                                 <span className="shrink-0 text-xs text-slate-400 font-mono mt-0.5">{story.id}</span>
                                 <p className="font-medium text-sm text-slate-800">{story.title}</p>
                               </div>
-                              <div className="flex items-center gap-2 shrink-0">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <span className={`text-xs border px-2 py-0.5 rounded-full font-medium ${PRIORITY_STYLES[story.priority] ?? PRIORITY_STYLES.Medium}`}>
                                   {story.priority}
                                 </span>
@@ -300,7 +300,7 @@ export default function ExportPage() {
             <div className="mt-8 pt-6 border-t border-slate-200">
               <p className="text-sm font-medium text-slate-700 mb-1">Export options</p>
               <p className="text-xs text-slate-400 mb-4">CSV and Notion export coming soon</p>
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button onClick={copyAllJSON}
                   className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium">
                   {copied === 'all' ? '✓ Copied!' : 'Copy all as JSON'}
