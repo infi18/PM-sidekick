@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 
 interface Story {
@@ -30,9 +31,32 @@ const PRIORITY_STYLES: Record<string, string> = {
   Low:    'bg-slate-50 text-slate-500 border-slate-200',
 };
 
+
+function LearnNote({ title, children }: { title: string; children: React.ReactNode }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div className="mt-3 mb-1">
+      <button onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 transition-colors group">
+        <span className="w-4 h-4 rounded-full bg-teal-100 group-hover:bg-teal-200 flex items-center justify-center text-[10px] font-bold transition-colors">
+          {open ? '−' : '+'}
+        </span>
+        {open ? 'Hide' : 'What does this mean?'}
+      </button>
+      {open && (
+        <div className="mt-2 bg-teal-50 border border-teal-100 rounded-xl px-4 py-3">
+          <p className="text-xs font-semibold text-teal-700 mb-1">{title}</p>
+          <p className="text-xs text-slate-600 leading-relaxed">{children}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ExportPage() {
   const [artifacts, setArtifacts] = useState<Artifacts | null>(null);
   const [loading, setLoading]     = useState(true);
+  const [mode, setMode]           = useState<'learner' | 'expert'>('learner');
   const [streaming, setStreaming]  = useState(false);
   const [progress, setProgress]   = useState(0);
   const [error, setError]         = useState('');
@@ -41,6 +65,11 @@ export default function ExportPage() {
   const bufferRef = useRef('');
 
   useEffect(() => {
+    document.title = 'JIRA Artifacts — PM Sidekick';
+    const savedMode = localStorage.getItem('pm_sidekick_mode') as 'learner' | 'expert' | null;
+    if (savedMode) setMode(savedMode);
+    const savedEpicCount = localStorage.getItem('pm_sidekick_epic_count');
+    const epicCount = savedEpicCount ? Number(savedEpicCount) : 3;
     const raw   = localStorage.getItem('pm_sidekick_research');
     const brief = localStorage.getItem('pm_sidekick_brief');
 
@@ -50,10 +79,10 @@ export default function ExportPage() {
       return;
     }
 
-    generateArtifacts(JSON.parse(raw), brief);
+    generateArtifacts(JSON.parse(raw), brief, epicCount);
   }, []);
 
-  async function generateArtifacts(research: object, brief: string) {
+  async function generateArtifacts(research: object, brief: string, epicCount: number = 3) {
     setStreaming(true);
     setProgress(30);
 
@@ -61,7 +90,7 @@ export default function ExportPage() {
       const res = await fetch('/api/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ research, brief }),
+        body: JSON.stringify({ research, brief, epicCount }),
       });
 
       setProgress(80);
@@ -137,14 +166,18 @@ export default function ExportPage() {
             PM<span className="text-indigo-600">Sidekick</span>
           </span>
           <div className="flex items-center gap-3">
+            <a href="https://github.com/infi18/PM-sidekick" target="_blank" rel="noreferrer"
+              className="text-xs text-slate-400 hover:text-slate-600 transition-colors hidden sm:block">
+              github.com/infi18/PM-sidekick ↗
+            </a>
             <button onClick={() => window.location.href = "/"}
               className="text-sm text-slate-500 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg transition-all">
-              ← Back to research
+              ← Back to results
             </button>
             {artifacts && (
               <button onClick={copyAllJSON}
                 className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg transition-all font-medium">
-                {copied === 'all' ? '✓ Copied' : 'Copy all JSON'}
+                {copied === 'all' ? '✓ Copied' : 'Copy all'}
               </button>
             )}
           </div>
@@ -157,11 +190,11 @@ export default function ExportPage() {
         <div className="mb-6 animate-fade-up">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-xs font-semibold text-indigo-500 uppercase tracking-wider bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
-              JIRA Export
+              Artifacts
             </span>
           </div>
-          <h1 className="font-display text-3xl text-slate-900 mb-1">JIRA Artifacts</h1>
-          <p className="text-slate-500">Generated from your research. Copy individual stories or export all as JSON.</p>
+          <h1 className="font-display text-3xl text-slate-900 mb-1">Epics & User Stories</h1>
+          <p className="text-slate-500">Generated from your research brief. Copy individual stories or export all as JSON.</p>
         </div>
 
         {/* Streaming progress bar */}
@@ -212,6 +245,16 @@ export default function ExportPage() {
                 </div>
               ))}
             </div>
+
+            {/* Learner note for epics — only in learner mode */}
+            {mode === 'learner' && (
+              <div className="bg-teal-50 border border-teal-100 rounded-2xl px-5 py-4 mb-2 animate-fade-up">
+                <p className="text-xs font-semibold text-teal-700 mb-1">What are epics and user stories?</p>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  An <strong>epic</strong> is a large body of work that represents a business outcome — not a feature. Each epic should answer: what user problem does completing this solve? A <strong>user story</strong> is a specific piece of functionality that contributes to that outcome. Story points estimate relative effort — 1 is trivial, 8 is complex. Acceptance criteria are the testable conditions that tell engineering when a story is done.
+                </p>
+              </div>
+            )}
 
             {/* Epics */}
             <div className="space-y-4">
@@ -277,6 +320,11 @@ export default function ExportPage() {
                                   </li>
                                 ))}
                               </ul>
+                              {mode === 'learner' && (
+                                <LearnNote title="About story points">
+                                  Story points measure complexity, not time. 1 point = simple change with no unknowns. 3 points = moderate complexity. 5-8 points = significant uncertainty or cross-team dependencies. Never convert story points directly to hours — that defeats the purpose.
+                                </LearnNote>
+                              )}
                               {story.labels?.length > 0 && (
                                 <div className="flex gap-1.5 mt-3 flex-wrap">
                                   {story.labels.map((label, i) => (
@@ -303,7 +351,7 @@ export default function ExportPage() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button onClick={copyAllJSON}
                   className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium">
-                  {copied === 'all' ? '✓ Copied!' : 'Copy all as JSON'}
+                  {copied === 'all' ? '✓ Copied!' : 'Copy all'}
                 </button>
                 <button disabled className="text-sm text-slate-400 border border-slate-200 px-5 py-2.5 rounded-xl cursor-not-allowed opacity-50">
                   Download CSV
