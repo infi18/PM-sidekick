@@ -199,22 +199,30 @@ export default function ExportPage() {
 
         {/* Streaming progress bar */}
         {streaming && (
-          <div className="mb-6 animate-fade-up">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-slate-500 flex items-center gap-2">
-                <span className="flex gap-1">
+          <div className="mb-6 animate-fade-up bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center shrink-0">
+                <div className="flex gap-1">
                   {[0,1,2].map(d => (
-                    <span key={d} className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce"
+                    <span key={d} className="w-1 h-1 rounded-full bg-white animate-bounce"
                       style={{ animationDelay: `${d * 150}ms` }} />
                   ))}
-                </span>
-                Generating epics and stories...
-              </span>
-              <span className="text-xs text-slate-400">{progress}%</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-800">Generating your epics and stories</p>
+                <p className="text-xs text-slate-400 mt-0.5">This takes about 15 seconds — Claude is writing real acceptance criteria, not templates</p>
+              </div>
+              <span className="text-sm font-medium text-indigo-600">{progress}%</span>
             </div>
-            <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-500 rounded-full transition-all duration-300"
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-500 rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }} />
+            </div>
+            <div className="flex justify-between mt-2">
+              <span className="text-xs text-slate-400">Structuring epics</span>
+              <span className="text-xs text-slate-400">Writing stories</span>
+              <span className="text-xs text-slate-400">Adding criteria</span>
             </div>
           </div>
         )}

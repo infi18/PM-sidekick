@@ -16,11 +16,9 @@ function LearnNote({ title, children }: { title: string; children: React.ReactNo
   return (
     <div className="mt-2">
       <button onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 transition-colors group">
-        <span className="w-4 h-4 rounded-full bg-teal-100 group-hover:bg-teal-200 flex items-center justify-center text-[10px] font-bold transition-colors">
-          {open ? '−' : '+'}
-        </span>
-        {open ? 'Hide' : 'What does this mean?'}
+        className="flex items-center gap-1.5 text-xs font-medium text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-2.5 py-1 rounded-lg transition-all mt-3">
+        <span className="text-[11px]">{open ? '▲' : '💡'}</span>
+        {open ? 'Hide explanation' : 'What does this mean?'}
       </button>
       {open && (
         <div className="mt-2 bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 animate-fade-up">
@@ -170,8 +168,8 @@ const PREVIEWS = [
 
 // ── Loading steps ─────────────────────────────────────────────────
 const STEPS = [
-  { id: 1, label: 'Market research agent', sub: 'Competitive landscape · Target users · Market gaps' },
-  { id: 2, label: 'Flow diagram generator', sub: 'User journey · Decision points · Value moments' },
+  { id: 1, label: 'Market research agent', sub: 'Scanning competitors · Finding target users · Identifying gaps' },
+  { id: 2, label: 'Flow diagram generator', sub: 'Mapping user journey · Adding decision points · Marking value moments' },
 ];
 
 export default function Home() {
@@ -190,9 +188,16 @@ export default function Home() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Animate steps while loading
-  // Clear any stale errors on mount
+  // Clear any stale errors on mount + restore brief from URL
   useEffect(() => {
     setError('');
+    const params = new URLSearchParams(window.location.search);
+    const urlBrief = params.get('brief');
+    if (urlBrief) {
+      setBrief(decodeURIComponent(urlBrief));
+      // Clean URL without reload
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   }, []);
 
   // Update page title per stage
@@ -254,7 +259,7 @@ export default function Home() {
       setResearch(data.research);
       setDiagram(data.diagram);
       setStage('results');
-      setActiveTab('research');
+      setActiveTab(mode === 'expert' ? 'diagram' : 'research');
       // Store for export page + session restore
       localStorage.setItem('pm_sidekick_research', JSON.stringify(data.research));
       localStorage.setItem('pm_sidekick_diagram', data.diagram);
@@ -334,15 +339,20 @@ export default function Home() {
             <div className="flex flex-col">
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all flex flex-col h-full">
                 {/* Mode toggle inside input card top */}
-                <div className="flex items-center gap-1 bg-slate-50 px-4 py-2.5 border-b border-slate-100">
-                  {(['learner', 'expert'] as Mode[]).map(m => (
-                    <button key={m} onClick={() => setMode(m)}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                        mode === m ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'
-                      }`}>
-                      {m === 'learner' ? '🎓 Learner' : '⚡ Expert'}
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between bg-slate-50 px-4 py-2.5 border-b border-slate-100">
+                  <div className="flex items-center gap-1">
+                    {(['learner', 'expert'] as Mode[]).map(m => (
+                      <button key={m} onClick={() => setMode(m)}
+                        className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                          mode === m ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'
+                        }`}>
+                        {m === 'learner' ? '🎓 Learner' : '⚡ Expert'}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-xs text-slate-400 italic">
+                    {mode === 'learner' ? 'Explains PM concepts inline' : 'Raw output, risks first'}
+                  </span>
                 </div>
                 <textarea
                   ref={textareaRef}
@@ -529,6 +539,16 @@ export default function Home() {
 
           {/* FAQ Section */}
           <div id="faq" className="mt-16 md:mt-20 max-w-6xl w-full mx-auto">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="flex-1 h-px bg-slate-200"/>
+            <span className="text-xs text-slate-400 uppercase tracking-widest font-medium">PM Sidekick</span>
+            <div className="flex-1 h-px bg-slate-200"/>
+          </div>
+          <div className="flex items-center gap-4 mb-8">
+            <div className="flex-1 h-px bg-slate-200"/>
+            <span className="text-xs text-slate-400 uppercase tracking-widest font-medium">PM Sidekick</span>
+            <div className="flex-1 h-px bg-slate-200"/>
+          </div>
             <h2 className="font-display text-2xl text-slate-900 mb-6 text-center">Frequently asked questions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
@@ -658,19 +678,40 @@ export default function Home() {
               className="text-sm text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-300 px-3 py-1.5 rounded-lg transition-all">
               ✏️ Refine brief
             </button>
+            <button onClick={() => {
+                const url = `${window.location.origin}?brief=${encodeURIComponent(brief)}`;
+                navigator.clipboard.writeText(url);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+              className="text-sm text-slate-500 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg transition-all">
+              {copied ? '✓ Link copied' : '🔗 Share'}
+            </button>
           </div>
         </div>
       </nav>
 
       <div className="max-w-6xl mx-auto w-full px-4 md:px-6 py-6 flex-1">
-        {/* Brief recap — compact in expert mode */}
-        <div className={`mb-6 animate-fade-up rounded-xl px-4 py-3 ${
+        {/* Brief recap */}
+        <div className={`mb-6 animate-fade-up rounded-xl px-4 py-3 flex items-start justify-between gap-4 ${
           mode === 'expert'
             ? 'bg-slate-900 border border-slate-800'
             : 'bg-white border border-slate-200 shadow-sm'
         }`}>
-          <p className={`text-xs uppercase tracking-wider mb-1 ${mode === 'expert' ? 'text-slate-500' : 'text-slate-400'}`}>Brief</p>
-          <p className={`text-sm italic ${mode === 'expert' ? 'text-slate-300' : 'text-slate-700'}`}>"{brief}"</p>
+          <div className="flex-1 min-w-0">
+            <p className={`text-xs uppercase tracking-wider mb-1 ${mode === 'expert' ? 'text-slate-500' : 'text-slate-400'}`}>Brief</p>
+            <p className={`text-sm italic ${mode === 'expert' ? 'text-slate-300' : 'text-slate-700'}`}>"{brief}"</p>
+          </div>
+          {/* Brief quality signal */}
+          <div className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full border ${
+            brief.length > 60
+              ? 'bg-green-50 text-green-600 border-green-200'
+              : brief.length > 30
+              ? 'bg-amber-50 text-amber-600 border-amber-100'
+              : 'bg-red-50 text-red-500 border-red-100'
+          }`}>
+            {brief.length > 60 ? '✓ Specific' : brief.length > 30 ? '~ Could be more specific' : '↑ Too vague'}
+          </div>
         </div>
 
         {/* Product name + one-liner */}
@@ -696,6 +737,22 @@ export default function Home() {
         {/* Research tab */}
         {activeTab === 'research' && research && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
+            {/* Expert mode — risks at top */}
+            {mode === 'expert' && research.risks && research.risks.length > 0 && (
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm col-span-full">
+                <h3 className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3">
+                  ⚠️ Risks — read these first
+                </h3>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  {research.risks.map((r: string, i: number) => (
+                    <div key={i} className="flex items-start gap-2 flex-1">
+                      <span className="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-red-400" />
+                      <p className="text-sm text-slate-300">{r}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Target users */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Target users</h3>
@@ -842,7 +899,7 @@ export default function Home() {
               <p className="text-sm font-medium text-slate-700 mb-1">Ready to export?</p>
               <p className="text-xs text-slate-400 mb-3">Generate JIRA epics and user stories from your research</p>
               {/* Fix 8: Epic count selector */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-xs text-slate-500">Epics to generate:</p>
                 {[2, 3, 4, 5].map(n => (
                   <button key={n}
@@ -858,12 +915,16 @@ export default function Home() {
                 {mode === 'learner' && (
                   <span className="text-xs text-teal-600 ml-1">3 is a good starting point for an MVP</span>
                 )}
+                {mode === 'expert' && epicCount > 3 && (
+                  <span className="text-xs text-amber-600 ml-1">⚠️ Quality degrades above 3 — use 2-3 for best output</span>
+                )}
               </div>
             </div>
             <div className="flex gap-3 flex-wrap">
               <a href="/export"
-                className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-xl transition-all">
+                className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-xl transition-all flex items-center gap-2">
                 Generate {epicCount} epics →
+                <span className="text-xs opacity-70">~15s</span>
               </a>
               <button disabled
                 className="text-xs text-slate-400 border border-slate-200 px-4 py-2.5 rounded-xl cursor-not-allowed opacity-50">
