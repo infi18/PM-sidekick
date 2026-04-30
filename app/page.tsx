@@ -544,11 +544,6 @@ export default function Home() {
             <span className="text-xs text-slate-400 uppercase tracking-widest font-medium">PM Sidekick</span>
             <div className="flex-1 h-px bg-slate-200"/>
           </div>
-          <div className="flex items-center gap-4 mb-8">
-            <div className="flex-1 h-px bg-slate-200"/>
-            <span className="text-xs text-slate-400 uppercase tracking-widest font-medium">PM Sidekick</span>
-            <div className="flex-1 h-px bg-slate-200"/>
-          </div>
             <h2 className="font-display text-2xl text-slate-900 mb-6 text-center">Frequently asked questions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
@@ -822,18 +817,7 @@ export default function Home() {
               )}
             </div>
 
-            {/* Risks */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Risks to watch</h3>
-              <div className="space-y-2">
-                {research.risks?.map((r, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="mt-1 shrink-0 w-1.5 h-1.5 rounded-full bg-red-300" />
-                    <p className="text-sm text-slate-600">{r}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+
 
             {/* Learning note — only in learner mode */}
             {mode === 'learner' && research.learning_note && (
