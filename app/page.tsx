@@ -183,6 +183,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'research' | 'diagram'>('research');
   const [copied, setCopied] = useState(false);
   const [epicCount, setEpicCount] = useState(3);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [previewTab, setPreviewTab] = useState<'research' | 'diagram' | 'jira'>('research');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -191,6 +192,11 @@ export default function Home() {
   // Clear any stale errors on mount + restore brief from URL
   useEffect(() => {
     setError('');
+    // Show onboarding banner on first visit
+    const visited = localStorage.getItem('pm_sidekick_visited');
+    if (!visited) {
+      setShowOnboarding(true);
+    }
     const params = new URLSearchParams(window.location.search);
     const urlBrief = params.get('brief');
     if (urlBrief) {
@@ -308,6 +314,29 @@ export default function Home() {
           </div>
         </div>
       </nav>
+
+      {/* First-visit onboarding banner */}
+      {showOnboarding && (
+        <div className="bg-indigo-600 text-white px-4 py-3">
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-lg shrink-0">🎓</span>
+              <p className="text-sm">
+                <span className="font-semibold">New to product management?</span>
+                {' '}Stay in Learner mode — every output explains what it means and why it matters. You&apos;ll learn PM while getting real work done.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setShowOnboarding(false);
+                localStorage.setItem('pm_sidekick_visited', 'true');
+              }}
+              className="shrink-0 text-indigo-200 hover:text-white text-xl leading-none transition-colors">
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 flex flex-col items-center px-4 md:px-6 py-10 md:py-16">
 
@@ -447,7 +476,7 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* Research tab */}
+                {/* Research tab — shows/hides learning note based on mode */}
                 {previewTab === 'research' && (
                   <div className="px-4 py-3 space-y-3 flex-1 overflow-y-auto">
                     <div>
@@ -468,10 +497,25 @@ export default function Home() {
                         </div>
                       ))}
                     </div>
-                    <div className="bg-teal-50 rounded-xl px-3 py-2 border border-teal-100">
-                      <p className="text-xs font-semibold text-teal-600 mb-0.5">PM learning note</p>
-                      <p className="text-xs text-slate-600">{PREVIEWS[previewIndex].note}</p>
-                    </div>
+
+                    {/* Learner mode — show PM learning note prominently */}
+                    {mode === 'learner' && (
+                      <div className="bg-teal-50 rounded-xl px-3 py-2.5 border border-teal-200">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="text-xs">💡</span>
+                          <p className="text-xs font-semibold text-teal-700">PM learning note</p>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed">{PREVIEWS[previewIndex].note}</p>
+                      </div>
+                    )}
+
+                    {/* Expert mode — show differentiation instead */}
+                    {mode === 'expert' && (
+                      <div className="bg-slate-50 rounded-xl px-3 py-2.5 border border-slate-200">
+                        <p className="text-xs font-semibold text-slate-500 mb-1">Differentiation</p>
+                        <p className="text-xs text-slate-600 leading-relaxed">{PREVIEWS[previewIndex].oneliner}</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
