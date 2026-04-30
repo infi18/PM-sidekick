@@ -328,22 +328,22 @@ export default function Home() {
 
         {/* Input + Preview — desktop side by side, mobile input first */}
         <div className="w-full max-w-6xl animate-fade-up animate-delay-100">
-          <div className="flex flex-col lg:grid lg:grid-cols-[65%_33%] gap-4 items-stretch">
+          <div className="flex flex-col lg:grid lg:grid-cols-[65%_33%] gap-4 items-start">
 
             {/* Input — always first in DOM so it shows on top on mobile */}
-            <div className="flex flex-col" style={{minHeight: "280px"}}>
-              {/* Mode toggle above input */}
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg w-fit mb-3">
-                {(['learner', 'expert'] as Mode[]).map(m => (
-                  <button key={m} onClick={() => setMode(m)}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                      mode === m ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                    }`}>
-                    {m === 'learner' ? '🎓 Learner mode' : '⚡ Expert mode'}
-                  </button>
-                ))}
-              </div>
+            <div className="flex flex-col">
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 transition-all flex flex-col h-full">
+                {/* Mode toggle inside input card top */}
+                <div className="flex items-center gap-1 bg-slate-50 px-4 py-2.5 border-b border-slate-100">
+                  {(['learner', 'expert'] as Mode[]).map(m => (
+                    <button key={m} onClick={() => setMode(m)}
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                        mode === m ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'
+                      }`}>
+                      {m === 'learner' ? '🎓 Learner' : '⚡ Expert'}
+                    </button>
+                  ))}
+                </div>
                 <textarea
                   ref={textareaRef}
                   value={brief}
@@ -394,13 +394,13 @@ export default function Home() {
             </div>
 
             {/* Preview panel — hidden on mobile, right on desktop */}
-            <div className="hidden lg:flex flex-col" style={{minHeight: "280px"}}>
+            <div className="hidden lg:flex flex-col">
 
               <div
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col flex-1"
               >
-                {/* Preview header */}
-                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2">
+                {/* Preview header — matches input card top bar height */}
+                <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-slate-900 truncate">{PREVIEWS[previewIndex].product}</p>
                     <p className="text-xs text-slate-400">{PREVIEWS[previewIndex].oneliner}</p>
