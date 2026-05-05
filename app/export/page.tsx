@@ -149,6 +149,68 @@ export default function ExportPage() {
     copyText(JSON.stringify(artifacts, null, 2), 'all');
   }
 
+  function copyNotion() {
+    if (!artifacts) return;
+    const brief = localStorage.getItem('pm_sidekick_brief') || '';
+    const research = localStorage.getItem('pm_sidekick_research');
+    const productName = research ? JSON.parse(research).product_name : 'Product';
+
+    const lines: string[] = [
+      `# ${productName}`,
+      `> Brief: ${brief}`,
+      ``,
+      `---`,
+      ``,
+    ];
+
+    artifacts.epics.forEach((epic) => {
+      lines.push(`## 🎯 ${epic.id}: ${epic.title}`);
+      lines.push(`> **Goal:** ${epic.goal}`);
+      lines.push(``);
+      lines.push(epic.description);
+      lines.push(``);
+      epic.stories.forEach((story) => {
+        lines.push(`### ${story.id}: ${story.title}`);
+        lines.push(``);
+        lines.push(`**Description:** ${story.description}`);
+        lines.push(``);
+        lines.push(`**Acceptance Criteria:**`);
+        story.acceptance_criteria.forEach(ac => lines.push(`- [ ] ${ac}`));
+        lines.push(``);
+        lines.push(`**Priority:** ${story.priority} | **Points:** ${story.story_points} | **Labels:** ${story.labels?.join(', ') || '—'}`);
+        lines.push(``);
+        lines.push(`---`);
+        lines.push(``);
+      });
+    });
+
+    copyText(lines.join('\n'), 'notion');
+  }
+
+  function copyJIRA() {
+    if (!artifacts) return;
+    const lines: string[] = [];
+
+    artifacts.epics.forEach((epic) => {
+      lines.push(`[EPIC] ${epic.id}: ${epic.title}`);
+      lines.push(`Goal: ${epic.goal}`);
+      lines.push(`Description: ${epic.description}`);
+      lines.push(``);
+      epic.stories.forEach((story) => {
+        lines.push(`  [STORY] ${story.id}: ${story.title}`);
+        lines.push(`  Description: ${story.description}`);
+        lines.push(`  Acceptance Criteria:`);
+        story.acceptance_criteria.forEach((ac, i) => lines.push(`    ${i + 1}. ${ac}`));
+        lines.push(`  Priority: ${story.priority} | Points: ${story.story_points} | Labels: ${story.labels?.join(', ') || '—'}`);
+        lines.push(``);
+      });
+      lines.push(`---`);
+      lines.push(``);
+    });
+
+    copyText(lines.join('\n'), 'jira');
+  }
+
   function toggleEpic(id: string) {
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
   }
@@ -175,10 +237,16 @@ export default function ExportPage() {
               ← Back to results
             </button>
             {artifacts && (
-              <button onClick={copyAllJSON}
-                className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg transition-all font-medium">
-                {copied === 'all' ? '✓ Copied' : 'Copy all'}
-              </button>
+              <div className="flex gap-2">
+                <button onClick={copyNotion}
+                  className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg transition-all font-medium">
+                  {copied === 'notion' ? '✓ Notion!' : '📋 Notion'}
+                </button>
+                <button onClick={copyJIRA}
+                  className="text-sm border border-slate-200 hover:border-slate-300 text-slate-600 px-4 py-1.5 rounded-lg transition-all font-medium">
+                  {copied === 'jira' ? '✓ JIRA!' : '🎫 JIRA'}
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -355,17 +423,21 @@ export default function ExportPage() {
             {/* Export strip */}
             <div className="mt-8 pt-6 border-t border-slate-200">
               <p className="text-sm font-medium text-slate-700 mb-1">Export options</p>
-              <p className="text-xs text-slate-400 mb-4">CSV and Notion export coming soon</p>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <p className="text-xs text-slate-400 mb-4">Copy in your preferred format — paste directly into Notion or JIRA</p>
+              <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+                <button onClick={copyNotion}
+                  className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium flex items-center gap-2">
+                  <span>📋</span>
+                  {copied === 'notion' ? '✓ Copied for Notion!' : 'Copy for Notion'}
+                </button>
+                <button onClick={copyJIRA}
+                  className="text-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 px-5 py-2.5 rounded-xl transition-all font-medium flex items-center gap-2">
+                  <span>🎫</span>
+                  {copied === 'jira' ? '✓ Copied for JIRA!' : 'Copy for JIRA'}
+                </button>
                 <button onClick={copyAllJSON}
-                  className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium">
-                  {copied === 'all' ? '✓ Copied!' : 'Copy all'}
-                </button>
-                <button disabled className="text-sm text-slate-400 border border-slate-200 px-5 py-2.5 rounded-xl cursor-not-allowed opacity-50">
-                  Download CSV
-                </button>
-                <button disabled className="text-sm text-slate-400 border border-slate-200 px-5 py-2.5 rounded-xl cursor-not-allowed opacity-50">
-                  Export to Notion
+                  className="text-sm text-slate-400 hover:text-slate-600 border border-slate-200 hover:border-slate-300 px-5 py-2.5 rounded-xl transition-all font-medium">
+                  {copied === 'all' ? '✓ Copied!' : 'Copy raw JSON'}
                 </button>
               </div>
             </div>
